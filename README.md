@@ -1,6 +1,9 @@
 🍔 Foodie Rusher
 
-A full-stack food delivery and management platform with real-time order tracking, interactive maps, AI-powered services, role-based dashboards, and secure online/COD payments.
+A modern full-stack food delivery and management platform built with the MERN ecosystem, real-time communication, AI services, secure payments, and role-based workflows.
+
+Live Application: https://foodie-rusher.onrender.com/
+Repository: https://github.com/nirmal168/Foodie_Rusher
 
 🌐 Live Demo: https://foodie-rusher.onrender.com/
 
@@ -24,19 +27,9 @@ A full-stack food delivery and management platform with real-time order tracking
 
 📱 Responsive React UI with modern animations
 
-📸 Screenshots
+📚 Contents
 
-Add your project screenshots here before publishing the repository. Recommended screenshots: Home Page, Customer Dashboard, Restaurant Dashboard, Delivery Tracking, AI Assistant, and Checkout.
-
-screenshots/
-├── home.png
-├── customer-dashboard.png
-├── restaurant-dashboard.png
-├── delivery-tracking.png
-├── ai-assistant.png
-└── checkout.png
-
-📖 Table of Contents
+Highlights
 
 Quick Start
 
@@ -48,11 +41,11 @@ Project Structure
 
 System Architecture
 
-Environment Configuration
+Environment & Security
 
 API Overview
 
-Real-Time WebSockets
+Real-Time Communication
 
 AI Microservice
 
@@ -60,9 +53,9 @@ Database Schemas
 
 Deployment
 
-Security
-
 Troubleshooting
+
+Author
 
 🚀 Quick Start
 
@@ -281,68 +274,54 @@ flowchart TD
     React -->|Image Upload| Cloudinary
     Express -->|Payment| Razorpay
 
-🔐 Environment Configuration
+🔐 Environment & Security
 
-Create backend/.env locally.
+Application credentials are kept outside the repository through environment variables.
 
-Example .env
+Local Configuration
+
+Create backend/.env locally:
+
+cp backend/.env.example backend/.env
+
+Use private values for:
 
 PORT=5000
 
-# Database
-MONGO_URI=your_mongodb_connection_string
+MONGO_URI=<private-mongodb-connection-string>
+JWT_SECRET=<private-jwt-secret>
 
-# Authentication
-JWT_SECRET=your_private_jwt_secret
+EMAIL=<private-email>
+PASS=<private-email-app-password>
 
-# Email
-EMAIL=your_email
-PASS=your_email_app_password
+CLOUDINARY_CLOUD_NAME=<cloudinary-cloud-name>
+CLOUDINARY_API_KEY=<cloudinary-api-key>
+CLOUDINARY_API_SECRET=<private-cloudinary-secret>
 
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+RAZORPAY_KEY_ID=<razorpay-key-id>
+RAZORPAY_KEY_SECRET=<private-razorpay-secret>
 
-# CORS
 ALLOWED_ORIGINS=http://localhost:5173
 
-🚨 Never commit secrets
+Repository Security
 
-Your .env file should never be pushed to GitHub.
-
-Recommended .gitignore entries:
-
-# Environment variables
 .env
 .env.*
 !.env.example
 
-# Dependencies
 node_modules/
-
-# Build output
 dist/
 build/
 
-# Python
 __pycache__/
 *.pyc
-
-# Logs
 *.log
 
-Use .env.example with placeholders only:
+No production credentials are stored in this repository.
 
-MONGO_URI=
-JWT_SECRET=
-EMAIL=
-PASS=
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
+MongoDB credentials, JWT secrets, Razorpay secrets, Cloudinary secrets, SMTP passwords, and other private API keys belong only in local environment files or the hosting provider's secret/environment configuration.
 
-Important: Do not put real MongoDB URLs, passwords, JWT secrets, Razorpay secrets, Cloudinary secrets, SMTP passwords, or API keys in README files, source code, screenshots, commits, or public GitHub issues.
+If a credential is ever exposed publicly, it should be revoked and rotated immediately rather than only deleted from the latest commit.
 
 📡 API Overview
 
@@ -365,8 +344,6 @@ Orders & Payments
 POST /orders
 PUT  /orders/:id/status
 POST /create-razorpay-order
-
-For production use, protect private endpoints with authentication and role-based authorization.
 
 ⚡ Real-Time WebSockets
 
@@ -468,61 +445,11 @@ Order
 
 🚢 Deployment
 
-Live Application
+The application is deployed on Render using a Docker-based production setup.
 
-Live Demo: https://foodie-rusher.onrender.com/
+Live Application: https://foodie-rusher.onrender.com/
 
-Render
-
-For a Docker-based deployment:
-
-Create a new Web Service on Render.
-
-Connect the GitHub repository.
-
-Select Docker as the runtime.
-
-Configure the required environment variables in Render's dashboard.
-
-Deploy the service.
-
-Important deployment rule
-
-Do not upload .env to GitHub. Configure production secrets directly in the hosting provider's environment-variable settings.
-
-🛡️ Security
-
-This repository is designed to keep application secrets outside the source code.
-
-Never expose
-
-MongoDB username/password
-
-JWT secret
-
-Razorpay secret key
-
-Cloudinary API secret
-
-SMTP/app password
-
-Any third-party API secret
-
-Production database connection strings
-
-If a secret was accidentally pushed
-
-Do not simply delete the line and push again. The secret may still exist in Git history.
-
-Immediately:
-
-Revoke/rotate the exposed credential.
-
-Remove the secret from the repository.
-
-Update the secret in Render/Vercel/local .env.
-
-Check Git history for additional exposure.
+The production environment uses hosting-provider environment variables for private configuration, keeping application secrets separate from the GitHub repository.
 
 🛠 Troubleshooting
 
@@ -553,7 +480,10 @@ Make sure the URI is stored only in .env/hosting environment variables.
 👨‍💻 Author
 
 Nirmal Prajapat
+MERN Stack Developer • C++ DSA
 
 GitHub: https://github.com/nirmal168
 
-Project Repository: https://github.com/nirmal168/Foodie_Rusher
+Foodie Rusher: https://github.com/nirmal168/Foodie_Rusher
+
+Live Demo: https://foodie-rusher.onrender.com/
