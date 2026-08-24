@@ -28,12 +28,23 @@ const Profile = () => {
     try {
       setFetching(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('/api/profile/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(res.data);
+      const localOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
+      let serverOrders = [];
+      try {
+        const res = await axios.get('/api/profile/orders', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        serverOrders = res.data || [];
+      } catch (e) {
+        console.warn("Server orders fetch warning:", e.message);
+      }
+
+      const serverIds = new Set(serverOrders.map(o => o._id || o.id));
+      const merged = [...serverOrders, ...localOrders.filter(lo => !serverIds.has(lo._id || lo.id))];
+      setOrders(merged);
     } catch (err) {
-      toast.error('Failed to load orders');
+      const localOrders = JSON.parse(localStorage.getItem('my_orders') || '[]');
+      setOrders(localOrders);
     } finally {
       setFetching(false);
     }

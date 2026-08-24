@@ -26,6 +26,14 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true
       },
+      '/create-order': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
+      '/cod': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
       '/recommend': {
         target: 'http://localhost:5000',
         changeOrigin: true

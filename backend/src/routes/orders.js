@@ -236,65 +236,87 @@ router.post('/api/orders/:id/complete', authenticate, async (req, res) => {
     }
 });
 
-// CREATE Razorpay Order (Mocked for Portfolio)
-router.post("/create-order", async (req, res) => {
-    const { amount, items, paymentMethod, customerId, deliveryAddress, shopId } = req.body;
+const handleCreateOrder = async (req, res) => {
+    const { amount, items, paymentMethod = 'online', customerId, deliveryAddress, shopId } = req.body;
 
     try {
         const cleanShopId = mongoose.Types.ObjectId.isValid(shopId) ? shopId : null;
         const cleanCustomerId = mongoose.Types.ObjectId.isValid(customerId) ? customerId : null;
 
         const newOrder = await Order.create({
-            items,
-            total: amount,
-            paymentMethod,
-            paymentStatus: "success", // Mocked success
+            items: (items || []).map(i => ({ name: i.name, price: Number(i.price) || 0, quantity: Number(i.quantity) || 1 })),
+            total: Number(amount) || 0,
+            paymentMethod: paymentMethod,
+            paymentStatus: "success", // Instant Mocked Success
             deliveryAddress: deliveryAddress || "123 Gourmet Street, Dummy Location",
             customerId: cleanCustomerId,
             shopId: cleanShopId,
-            razorpayOrderId: "mock_order_id_" + Date.now()
+            razorpayOrderId: "order_" + Date.now(),
+            status: "pending"
         });
 
         // Mock successful Razorpay order response
-        res.json({ id: newOrder.razorpayOrderId, status: "created", amount: amount * 100 });
+        res.json({ 
+            success: true,
+            id: newOrder.razorpayOrderId, 
+            orderId: newOrder._id,
+            status: "created", 
+            amount: (Number(amount) || 0) * 100,
+            order: newOrder
+        });
         
         // Trigger AI geo-spatial assignment in background
         if (cleanCustomerId) {
-            autoAssignOrder(newOrder._id, cleanCustomerId);
+            autoAssignOrder(newOrder._id, cleanCustomerId).catch(() => {});
         }
     } catch (err) {
         console.error("Order creation failed:", err);
         res.status(500).json({ error: "Order creation failed" });
     }
-});
+};
 
-// COD Checkout
-router.post("/cod", async (req, res) => {
+const handleCodOrder = async (req, res) => {
     try {
         const { amount, items, customerId, deliveryAddress, shopId } = req.body;
         const cleanShopId = mongoose.Types.ObjectId.isValid(shopId) ? shopId : null;
         const cleanCustomerId = mongoose.Types.ObjectId.isValid(customerId) ? customerId : null;
 
         const newOrder = await Order.create({
-            items,
-            total: amount,
+            items: (items || []).map(i => ({ name: i.name, price: Number(i.price) || 0, quantity: Number(i.quantity) || 1 })),
+            total: Number(amount) || 0,
             paymentMethod: "COD",
             paymentStatus: "success",
             deliveryAddress: deliveryAddress || "123 Gourmet Street, Dummy Location",
             customerId: cleanCustomerId,
-            shopId: cleanShopId
+            shopId: cleanShopId,
+            status: "pending"
         });
 
-        res.send({ message: "Order Placed (Cash on Delivery)" });
+        res.json({ 
+            success: true,
+            message: "Order Placed (Cash on Delivery)",
+            orderId: newOrder._id,
+            order: newOrder
+        });
         
         // Trigger AI geo-spatial assignment in background
         if (cleanCustomerId) {
-            autoAssignOrder(newOrder._id, cleanCustomerId);
+            autoAssignOrder(newOrder._id, cleanCustomerId).catch(() => {});
         }
     } catch (err) {
         console.error("COD Checkout error:", err);
         res.status(500).json({ error: "COD Checkout failed" });
     }
-});
+};
+
+// CREATE Online/Razorpay Order Routes
+router.post("/create-order", handleCreateOrder);
+router.post("/api/create-order", handleCreateOrder);
+router.post("/create-razorpay-order", handleCreateOrder);
+router.post("/api/create-razorpay-order", handleCreateOrder);
+
+// COD Checkout Routes
+router.post("/cod", handleCodOrder);
+router.post("/api/cod", handleCodOrder);
 
 module.exports = router;
