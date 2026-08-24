@@ -134,6 +134,7 @@ router.get("/me", authenticate, async (req, res) => {
 });
 
 const { sendOtpMail } = require("../utils/mail");
+const { sendOtpSms } = require("../utils/sms");
 
 // Forgot Password Route
 router.post("/forgot-password", async (req, res) => {
@@ -162,12 +163,11 @@ router.post("/forgot-password", async (req, res) => {
             emailSent = true;
             console.log(`[OTP Verification] Email sent successfully to ${email}`);
         } catch (err) {
-            console.warn("[OTP Verification] SMTP failed (using resilient in-app delivery):", err.message);
+            console.warn("[OTP Verification] SMTP notice:", err.message);
         }
 
         res.json({ 
-            message: emailSent ? "OTP sent to your email" : "OTP generated successfully",
-            otp: otp,
+            message: emailSent ? `OTP sent to ${email}` : `OTP sent to ${email}`,
             emailSent
         });
     } catch (err) {
@@ -185,12 +185,10 @@ router.post("/verify-otp", async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Allow exact OTP match OR master bypass OTPs (123456 / 000000)
-        const isMasterOtp = otp === "123456" || otp === "000000";
-        const isValidUserOtp = user.resetOtp && user.resetOtp === otp && (!user.otpExpires || new Date() <= user.otpExpires);
+        const isValidOtp = user.resetOtp && user.resetOtp === otp && (!user.otpExpires || new Date() <= user.otpExpires);
 
-        if (!isMasterOtp && !isValidUserOtp) {
-            return res.status(400).json({ error: "Invalid or expired OTP. (Tip: Use 123456)" });
+        if (!isValidOtp) {
+            return res.status(400).json({ error: "Invalid or expired OTP code" });
         }
 
         user.isOtpVerified = true;
@@ -229,7 +227,7 @@ router.post("/reset-password", async (req, res) => {
     }
 });
 
-// OTP Send Endpoint
+// OTP Send Endpoint (for Email or Mobile Phone)
 router.post("/otp/send", async (req, res) => {
     try {
         const { type, identifier, role } = req.body;
@@ -241,7 +239,6 @@ router.post("/otp/send", async (req, res) => {
         if (type === 'email') {
             user = await User.findOne({ email: identifier });
             if (!user) {
-                // Sign Up placeholder
                 const defaultName = identifier.split('@')[0];
                 const hashedPassword = await bcryptjs.hash(Math.random().toString(36), 10);
                 user = await User.create({
@@ -255,7 +252,6 @@ router.post("/otp/send", async (req, res) => {
             const cleanPhone = identifier.replace(/\s+/g, '');
             user = await User.findOne({ phone: cleanPhone });
             if (!user) {
-                // Sign Up placeholder
                 const defaultName = `User_${cleanPhone.slice(-4)}`;
                 const mockEmail = `phone_${cleanPhone}@foodierusher.local`;
                 const hashedPassword = await bcryptjs.hash(Math.random().toString(36), 10);
@@ -278,24 +274,28 @@ router.post("/otp/send", async (req, res) => {
         user.isOtpVerified = false;
         await user.save();
 
-        console.log(`[OTP Login/Signup] Sent ${type} OTP: ${otp} to ${identifier}`);
+        console.log(`[OTP Dispatch] Generated ${type} OTP: ${otp} for ${identifier}`);
         
-        let emailSent = false;
+        let delivered = false;
         if (type === 'email') {
             try {
                 await sendOtpMail(identifier, otp);
-                emailSent = true;
+                delivered = true;
             } catch (err) {
-                console.warn("[OTP Send SMTP Warning]:", err.message);
+                console.warn("[OTP Email Dispatch Warning]:", err.message);
             }
         } else if (type === 'phone') {
-            console.log(`[SMS Gateway Mock] Sending SMS to ${identifier}: Your OTP is ${otp}`);
+            try {
+                await sendOtpSms(identifier, otp);
+                delivered = true;
+            } catch (err) {
+                console.warn("[OTP SMS Dispatch Warning]:", err.message);
+            }
         }
 
         res.json({ 
-            message: "OTP sent successfully",
-            otp: otp,
-            emailSent
+            message: `OTP sent to your ${type === 'email' ? 'email' : 'mobile number'}`,
+            delivered
         });
     } catch (err) {
         console.error("OTP send error:", err);
@@ -323,11 +323,10 @@ router.post("/otp/verify", async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
 
-        const isMasterOtp = otp === "123456" || otp === "000000";
         const isValidUserOtp = user.resetOtp && user.resetOtp === otp && (!user.otpExpires || new Date() <= user.otpExpires);
 
-        if (!isMasterOtp && !isValidUserOtp) {
-            return res.status(400).json({ error: "Invalid or expired OTP. (Tip: Use 123456)" });
+        if (!isValidUserOtp) {
+            return res.status(400).json({ error: "Invalid or expired OTP" });
         }
 
         user.resetOtp = undefined;

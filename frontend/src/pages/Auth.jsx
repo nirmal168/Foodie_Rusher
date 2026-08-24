@@ -108,12 +108,7 @@ const Auth = ({ defaultIsLogin = true }) => {
         identifier: otpIdentifier,
         role: role
       });
-      if (res.data?.otp) {
-        setOtpCode(res.data.otp);
-        toast.success(`OTP generated: ${res.data.otp}`, { duration: 6000, icon: '🔑' });
-      } else {
-        toast.success('OTP sent successfully!');
-      }
+      toast.success(`OTP sent to ${otpIdentifier}! Please check your ${otpMode === 'email' ? 'email' : 'mobile'}.`);
       setOtpSent(true);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to send OTP');
@@ -124,19 +119,22 @@ const Auth = ({ defaultIsLogin = true }) => {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (!otpCode.trim()) return;
+    if (!otpCode.trim()) {
+      toast.error('Please enter the 6-digit OTP code received.');
+      return;
+    }
     setOtpLoading(true);
     try {
       const res = await axios.post('/otp/verify', {
         type: otpMode,
         identifier: otpIdentifier,
-        otp: otpCode || '123456'
+        otp: otpCode
       });
       toast.success('Authenticated successfully!');
       loginWithToken(res.data.token, res.data.user);
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid OTP code. (Tip: Use 123456)');
+      toast.error(err.response?.data?.error || 'Invalid or expired OTP code.');
     } finally {
       setOtpLoading(false);
     }
@@ -220,16 +218,9 @@ const Auth = ({ defaultIsLogin = true }) => {
                   className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-bold text-center text-lg tracking-[0.2em]`}
                 />
                 </div>
-                <div className="flex items-center justify-between mt-1 px-1">
-                  <p className="text-[10px] text-slate-400 font-medium">Enter code received</p>
-                  <button 
-                    type="button" 
-                    onClick={() => setOtpCode('123456')}
-                    className="text-[9px] font-black text-red-500 uppercase tracking-widest hover:underline cursor-pointer"
-                  >
-                    Use Master OTP (123456)
-                  </button>
-                </div>
+                <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">
+                  Enter the 6-digit OTP code sent to your {otpMode === 'email' ? 'email address' : 'mobile number'}
+                </p>
               </div>
 
               <button
