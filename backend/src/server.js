@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
@@ -58,6 +59,9 @@ mongoose.connection.once('open', async () => {
 });
 const PORT = process.env.PORT || 5000;
 
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+
 // Mounting Routes
 app.use("/", authRouter); // handles login, register, me
 app.use("/auth", authRouter); // alias for auth routes (e.g., /auth/register)
@@ -67,6 +71,11 @@ app.use("/api/locations", locationsRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/shop", shopRouter);
 app.use("/api/item", itemsRouter);
+
+// Wildcard route to serve React index.html for client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+});
 
 // Start server after routes and index handling
 server.listen(PORT, () => console.log(`Server running on port ${PORT} with Real-time Support`));
