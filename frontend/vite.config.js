@@ -9,6 +9,22 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true
+      },
+      '/login': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
+      '/register': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
+      '/me': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
+      '/orders': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
       }
     }
   }

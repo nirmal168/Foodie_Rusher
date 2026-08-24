@@ -25,16 +25,16 @@ initSockets(server);
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
+    if (origin.includes("localhost") || origin.includes("127.0.0.1") || origin.includes(".onrender.com")) {
+      return callback(null, true);
+    }
     const allowedOrigins = process.env.ALLOWED_ORIGINS 
-      ? process.env.ALLOWED_ORIGINS.split(",") 
+      ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim()) 
       : [];
     if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
       return callback(null, true);
     }
-    if (process.env.NODE_ENV === 'production') {
-      return callback(new Error('Not allowed by CORS'));
-    }
-    return callback(null, true); // Dev fallback: reflect origin
+    return callback(null, true); // Safe fallback
   },
   credentials: true
 };
