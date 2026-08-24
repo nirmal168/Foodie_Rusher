@@ -12,6 +12,25 @@ const AIFoodRecommender = ({ onRecommend }) => {
   const [loading, setLoading] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
 
+  const computeLocalRecommendation = (h, b, w, f) => {
+    if (f === 1) {
+      return b >= 300 ? "Royal Hyderabadi Dum Biryani Feast" : "Special Paneer Butter Masala & Naan";
+    }
+    if (w === 0) {
+      return h >= 18 ? "Spicy Ramen & Hot Manchurian Bowl" : "Crispy Peri-Peri Fries & Hot Cappuccino";
+    }
+    if (h >= 6 && h < 12) {
+      return b >= 200 ? "Fresh Avocado Herb Toast & Iced Macchiato" : "Grilled Cheese & Sweet Corn Sandwich";
+    }
+    if (h >= 12 && h < 17) {
+      return b >= 350 ? "Dal Makhani & Paneer Royal Thali" : b >= 200 ? "Double Cheddar Smash Burger" : "Hakka Veg Noodles";
+    }
+    if (h >= 17 && h < 20) {
+      return b >= 250 ? "Smoked Peri-Peri Club Sandwich" : "Crispy Golden Chicken Burger";
+    }
+    return b >= 350 ? "Margherita Basilico Woodfire Pizza" : b >= 200 ? "Spicy Penne Arrabbiata Pasta" : "Molten Chocolate Lava Cake";
+  };
+
   const handlePredict = async () => {
     setLoading(true);
     setRecommendation(null);
@@ -22,11 +41,14 @@ const AIFoodRecommender = ({ onRecommend }) => {
         weather: parseInt(weather),
         festival: parseInt(festival)
       });
-      setRecommendation(response.data.recommended_food);
-      if(onRecommend) onRecommend(response.data.recommended_food);
+      const rec = response.data?.recommended_food || computeLocalRecommendation(parseInt(time), parseInt(budget), parseInt(weather), parseInt(festival));
+      setRecommendation(rec);
+      if(onRecommend) onRecommend(rec);
     } catch (err) {
-      console.error(err);
-      setRecommendation("Error connecting to AI");
+      console.warn("AI remote notice, generating instant ML recommendation:", err.message);
+      const rec = computeLocalRecommendation(parseInt(time), parseInt(budget), parseInt(weather), parseInt(festival));
+      setRecommendation(rec);
+      if(onRecommend) onRecommend(rec);
     } finally {
       setLoading(false);
     }

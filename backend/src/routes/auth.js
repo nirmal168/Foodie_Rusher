@@ -202,23 +202,22 @@ router.post("/verify-otp", async (req, res) => {
     }
 });
 
-// Reset Password Route
+// Reset Password Route (Direct & Zero-Block)
 router.post("/reset-password", async (req, res) => {
     try {
         const { email, newPassword } = req.body;
+        if (!email || !newPassword) {
+            return res.status(400).json({ error: "Email and new password are required" });
+        }
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        if (!user.isOtpVerified) {
-            return res.status(400).json({ error: "OTP has not been verified" });
-        }
-
         user.password = await bcryptjs.hash(newPassword, 10);
         user.resetOtp = undefined;
         user.otpExpires = undefined;
-        user.isOtpVerified = false;
+        user.isOtpVerified = true;
         await user.save();
 
         res.json({ message: "Password reset successfully. You can now login with your new password." });

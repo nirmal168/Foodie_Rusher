@@ -14,12 +14,6 @@ const Auth = ({ defaultIsLogin = true }) => {
   const navigate = useNavigate();
   const { login, register, loginWithToken } = useAuth();
 
-  const [otpMode, setOtpMode] = useState(null); // null, 'email', or 'phone'
-  const [otpIdentifier, setOtpIdentifier] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -98,53 +92,6 @@ const Auth = ({ defaultIsLogin = true }) => {
     }
   };
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (!otpIdentifier.trim()) return;
-    setOtpLoading(true);
-    try {
-      const res = await axios.post('/otp/send', {
-        type: otpMode,
-        identifier: otpIdentifier,
-        role: role
-      });
-      if (res.data?.otp) {
-        setOtpCode(res.data.otp);
-        toast.success(`Verification Code: ${res.data.otp}`, { duration: 6000, icon: '🔑' });
-      } else {
-        toast.success(`OTP sent to ${otpIdentifier}! Please check your ${otpMode === 'email' ? 'email' : 'mobile'}.`);
-      }
-      setOtpSent(true);
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to send OTP');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otpCode.trim()) {
-      toast.error('Please enter the 6-digit OTP code received.');
-      return;
-    }
-    setOtpLoading(true);
-    try {
-      const res = await axios.post('/otp/verify', {
-        type: otpMode,
-        identifier: otpIdentifier,
-        otp: otpCode
-      });
-      toast.success('Authenticated successfully!');
-      loginWithToken(res.data.token, res.data.user);
-      navigate('/');
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid or expired OTP code.');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
   const roles = [
     { id: 'customer', name: 'Customer', icon: User },
     { id: 'owner', name: 'Restaurant Owner', icon: ChefHat },
@@ -161,119 +108,6 @@ const Auth = ({ defaultIsLogin = true }) => {
 
   const theme = getTheme();
 
-  const renderOtpForm = () => {
-    return (
-      <div className="space-y-4">
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
-            Sign In with {otpMode === 'email' ? 'Email OTP' : 'Mobile OTP'}
-          </h2>
-          <p className="text-slate-400 font-medium text-xs mt-1">
-            Logging in as <span className="font-bold text-slate-600 uppercase">{role}</span>
-          </p>
-        </div>
-
-        {!otpSent ? (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
-                {otpMode === 'email' ? 'Email Address' : 'Mobile Number'}
-              </label>
-              <div className="relative">
-                {otpMode === 'email' ? (
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                ) : (
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                )}
-                <input
-                  type={otpMode === 'email' ? 'email' : 'tel'}
-                  value={otpIdentifier}
-                  onChange={(e) => setOtpIdentifier(e.target.value)}
-                  placeholder={otpMode === 'email' ? 'Enter your email' : 'Enter your mobile number'}
-                  required
-                  className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-medium text-slate-900 text-sm`}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={otpLoading}
-              className={`w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[12px] uppercase tracking-widest ${theme.hoverBg} transition-colors shadow-xl shadow-slate-200 mt-6 flex items-center justify-center gap-2`}
-            >
-              {otpLoading ? 'Sending...' : 'Send OTP Code'}
-              <ArrowRight size={16} />
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
-                Enter 6-Digit OTP
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  placeholder="Enter OTP code"
-                  required
-                  className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-bold text-center text-lg tracking-[0.2em]`}
-                />
-              </div>
-              {otpCode ? (
-                <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3 flex items-center justify-between mt-2">
-                  <div className="flex items-center gap-2 text-emerald-900">
-                    <Sparkles size={16} className="text-emerald-500 animate-pulse" />
-                    <span className="text-xs font-bold">Verification Code:</span>
-                    <span className="text-sm font-black tracking-widest bg-white px-2.5 py-0.5 rounded border border-emerald-300 text-emerald-600">{otpCode}</span>
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Ready</span>
-                </div>
-              ) : (
-                <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">
-                  Enter the 6-digit OTP code sent to your {otpMode === 'email' ? 'email address' : 'mobile number'}
-                </p>
-              )}
-            </div>
-
-              <button
-                type="submit"
-                disabled={otpLoading}
-                className={`w-full bg-green-500 text-white py-4 rounded-xl font-black text-[12px] uppercase tracking-widest hover:bg-green-600 transition-colors shadow-xl shadow-green-100 mt-6 flex items-center justify-center gap-2`}
-              >
-                {otpLoading ? 'Verifying...' : 'Verify & Sign In'}
-                <CheckCircle size={16} />
-              </button>
-
-            <button
-              type="button"
-              onClick={() => setOtpSent(false)}
-              className="w-full text-slate-400 hover:text-slate-600 text-center font-bold text-[10px] uppercase tracking-widest mt-2"
-            >
-              Change {otpMode === 'email' ? 'Email' : 'Number'}
-            </button>
-          </form>
-        )}
-
-        <button
-          type="button"
-          onClick={() => {
-            setOtpMode(null);
-            setOtpSent(false);
-            setOtpIdentifier('');
-            setOtpCode('');
-          }}
-          className="w-full text-center text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-800 transition-colors mt-4 block"
-        >
-          ← Back to Password Login
-        </button>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen pt-24 pb-16 bg-white flex items-center justify-center px-4 relative overflow-hidden transition-colors duration-500">
       <motion.div
@@ -282,11 +116,7 @@ const Auth = ({ defaultIsLogin = true }) => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white rounded-3xl shadow-zomato p-8 relative z-10 border border-slate-100"
       >
-        {otpMode ? (
-          renderOtpForm()
-        ) : (
-          <>
-            <div className="text-center mb-8">
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-black text-slate-900 mb-2">
             {isLogin ? 'Welcome back' : 'Create an account'}
           </h1>
@@ -494,39 +324,36 @@ const Auth = ({ defaultIsLogin = true }) => {
 
         <div className="relative my-8">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-black tracking-widest text-[10px]">Or passwordless OTP</span></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-black tracking-widest text-[10px]">Instant 1-Click Demo Portals</span></div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-8">
            <button 
              type="button" 
-             onClick={() => setOtpMode('email')}
-             className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-red-50 hover:border-red-100 transition-all shadow-sm gap-1 group"
-             title="Sign In with Email OTP"
+             onClick={() => handleQuickLogin('customer@test.com', 'password123', 'customer')}
+             className="flex flex-col items-center justify-center py-3 border border-slate-100 rounded-2xl hover:bg-red-50 hover:border-red-200 transition-all shadow-sm gap-1 group"
+             title="Login as Customer"
            >
-             <Mail size={18} className="text-red-500 group-hover:scale-110 transition-transform"/>
-             <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-red-500 transition-colors">Email OTP</span>
+             <User size={18} className="text-red-500 group-hover:scale-110 transition-transform"/>
+             <span className="text-[10px] font-black uppercase tracking-tight text-slate-700 group-hover:text-red-600 transition-colors">Customer</span>
            </button>
            <button 
              type="button" 
-             onClick={() => setOtpMode('phone')}
-             className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-100 transition-all shadow-sm gap-1 group"
-             title="Sign In with Mobile OTP"
+             onClick={() => handleQuickLogin('owner@test.com', 'password123', 'owner')}
+             className="flex flex-col items-center justify-center py-3 border border-slate-100 rounded-2xl hover:bg-amber-50 hover:border-amber-200 transition-all shadow-sm gap-1 group"
+             title="Login as Restaurant Owner"
            >
-             <Phone size={18} className="text-green-500 group-hover:scale-110 transition-transform"/>
-             <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-green-500 transition-colors">Mobile OTP</span>
+             <ChefHat size={18} className="text-amber-500 group-hover:scale-110 transition-transform"/>
+             <span className="text-[10px] font-black uppercase tracking-tight text-slate-700 group-hover:text-amber-600 transition-colors">Owner</span>
            </button>
            <button 
              type="button" 
-             onClick={() => {
-               const email = role === 'owner' ? 'owner@test.com' : role === 'staff' ? 'staff@test.com' : 'customer@test.com';
-               handleQuickLogin(email, 'password123', role);
-             }}
-             className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-amber-50 hover:border-amber-100 transition-all shadow-sm gap-1 group"
-             title="Quick Demo Login"
+             onClick={() => handleQuickLogin('staff@test.com', 'password123', 'staff')}
+             className="flex flex-col items-center justify-center py-3 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-200 transition-all shadow-sm gap-1 group"
+             title="Login as Delivery Staff"
            >
-             <Globe size={18} className="text-blue-400 group-hover:scale-110 transition-transform"/>
-             <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-amber-500 transition-colors">Demo Login</span>
+             <Bike size={18} className="text-green-500 group-hover:scale-110 transition-transform"/>
+             <span className="text-[10px] font-black uppercase tracking-tight text-slate-700 group-hover:text-green-600 transition-colors">Staff</span>
            </button>
         </div>
 
@@ -539,9 +366,7 @@ const Auth = ({ defaultIsLogin = true }) => {
             {isLogin ? 'Join now' : 'Sign in here'}
           </button>
         </div>
-      </>
-    )}
-  </motion.div>
+      </motion.div>
     </div>
   );
 };
