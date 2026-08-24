@@ -1,489 +1,164 @@
-🍔 Foodie Rusher
+# 🍔 Foodie Rusher
 
-A modern full-stack food delivery and management platform built with the MERN ecosystem, real-time communication, AI services, secure payments, and role-based workflows.
+> **A modern full-stack food delivery and management platform built with the MERN ecosystem, real-time communication, AI services, secure payments, and role-based workflows.**
 
-Live Application: https://foodie-rusher.onrender.com/
-Repository: https://github.com/nirmal168/Foodie_Rusher
+<p align="center">
 
-🌐 Live Demo: https://foodie-rusher.onrender.com/
+  <a href="https://foodie-rusher.onrender.com/">
+    <img src="https://img.shields.io/badge/🌐%20Live%20Demo-Foodie%20Rusher-success?style=for-the-badge" alt="Live Demo">
+  </a>
 
-✨ Highlights
+  <a href="https://github.com/nirmal168/Foodie_Rusher">
+    <img src="https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github" alt="GitHub">
+  </a>
 
-👤 Role-based dashboards for Customers, Restaurant Owners, and Delivery Staff
+</p>
 
-📍 Real-time delivery tracking using Socket.IO and interactive maps
+<p align="center">
 
-🤖 AI-powered food recommendations and demand forecasting
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React">
 
-💳 Razorpay + Cash on Delivery checkout
+  <img src="https://img.shields.io/badge/Node.js-20+-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
 
-🔐 JWT-based authentication and protected APIs
+  <img src="https://img.shields.io/badge/Express-5-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express">
 
-☁️ Cloudinary image storage
+  <img src="https://img.shields.io/badge/MongoDB-Mongoose-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
 
-📧 Email/OTP support through SMTP
+  <img src="https://img.shields.io/badge/Socket.IO-4-010101?style=for-the-badge&logo=socket.io&logoColor=white" alt="Socket.IO">
 
-🐳 Docker-ready deployment
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
 
-📱 Responsive React UI with modern animations
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker">
 
-📚 Contents
+</p>
 
-Highlights
+---
 
-Quick Start
+## 🎯 Overview
 
-Key Features
+**Foodie Rusher** is a full-stack food delivery and management platform designed around three connected roles:
 
-Technical Stack
+- 👤 **Customers** — discover restaurants, manage carts, place orders, make payments, and track deliveries.
+- 🏪 **Restaurant Owners** — manage restaurants and menus, process incoming orders, and monitor sales.
+- 🛵 **Delivery Partners** — accept deliveries, update order status, and share real-time location.
 
-Project Structure
+The platform combines a React frontend, Node.js/Express backend, MongoDB database, Socket.IO real-time communication, and a dedicated Python AI microservice.
 
-System Architecture
+---
 
-Environment & Security
+## ✨ Key Features
 
-API Overview
+### 👤 Customer
 
-Real-Time Communication
+- Browse nearby restaurants
+- Explore restaurant menus
+- Add and manage cart items
+- Place food orders
+- Razorpay online payments
+- Cash on Delivery
+- Order history
+- Real-time delivery tracking
+- Referral rewards
+- Wallet balance
+- AI-powered food recommendations
 
-AI Microservice
+### 🏪 Restaurant Owner
 
-Database Schemas
+- Restaurant profile management
+- Menu management
+- Add, update and delete food items
+- Manage incoming orders
+- Update order status
+- Sales and order analytics
+- AI-powered demand forecasting
 
-Deployment
+### 🛵 Delivery Partner
 
-Troubleshooting
+- View available deliveries
+- Accept delivery orders
+- Update delivery status
+- Real-time GPS location sharing
+- Live customer tracking
 
-Author
+### ⚡ Real-Time System
 
-🚀 Quick Start
+- Socket.IO based communication
+- Live delivery location updates
+- Real-time order status
+- Order-created notifications
+- Dedicated order rooms
 
-Prerequisites
+### 🤖 AI Services
 
-Node.js: 20.x or higher
+- Personalized food recommendations
+- Collaborative filtering
+- Content-based recommendations
+- Order demand forecasting
+- Dynamic pricing calculations
+- Python Flask AI microservice
 
-MongoDB: MongoDB Community Server or MongoDB Atlas
+### 💳 Payment & Services
 
-Python: 3.10+ for the AI microservice
-
-Git
-
-1. Clone the repository
-
-git clone https://github.com/nirmal168/Foodie_Rusher.git
-cd Foodie_Rusher
-
-2. Install dependencies
-
-npm run install:all
-
-3. Configure environment variables
-
-Create your local environment file from the example:
-
-cp backend/.env.example backend/.env
-
-Then add your own local credentials to backend/.env.
-
-4. Seed local development data
-
-npm run seed:locations
-npm run seed:test
-
-⚠️ Seed accounts are intended for local development/testing only. Never publish real passwords, API keys, database credentials, JWT secrets, or payment credentials in GitHub.
-
-5. Start the application
-
-npm run dev
-
-Typical local services:
-
-Service
-
-URL
-
-React Frontend
-
-http://localhost:5173
-
-Express Backend
-
-http://localhost:5000
-
-AI Microservice
-
-http://localhost:5002
-
-✨ Key Features
-
-👤 Multi-Role Dashboard
-
-Customer
-
-Browse nearby restaurants
-
-Search and manage food items
-
-Cart and checkout
-
-Order history and transaction tracking
-
-Referral/wallet functionality
-
-Real-time delivery tracking
-
-Restaurant Owner
-
-Manage restaurant profile
-
-Add, update, and delete menu items
-
-Process incoming orders
-
-View sales information
-
-Delivery Staff
-
-View available deliveries
-
-Accept orders
-
-Update delivery status
-
-Share real-time delivery location
-
-📍 Real-Time Tracking
-
-Socket.IO-based communication
-
-Order-specific rooms
-
-Live delivery location updates
-
-Leaflet.js interactive maps
-
-Real-time order status notifications
-
-💳 Payments & Promotions
-
-Razorpay payment integration
-
-Cash on Delivery
-
-Referral rewards
-
-Wallet balance
-
-Promotional discounts
-
-🤖 AI Services
-
-Personalized food recommendations
-
-Demand forecasting based on historical order data
-
-Dynamic pricing/delivery-fee calculations
-
-Flask-based AI microservice separated from the main API
-
-🛠 Technical Stack
-
-Category
-
-Technologies
-
-Frontend
-
-React 18, Vite, Tailwind CSS 4, Framer Motion, Leaflet.js
-
-Backend
-
-Node.js 20+, Express 5, Socket.IO 4, JWT
-
-Database
-
-MongoDB, Mongoose 9
-
-AI Service
-
-Python 3.10+, Flask, scikit-learn, NumPy, pandas
-
-Payments
-
-Razorpay
-
-Storage
-
-Cloudinary
-
-Email
-
-Nodemailer / SMTP
-
-Deployment
-
-Render, Docker, Docker Compose
-
-📦 Project Structure
-
-Foodie_Rusher/
-├── Dockerfile
-├── docker-compose.yml
-├── package.json
-│
-├── backend/
-│   ├── ai_services/
-│   │   ├── app.py
-│   │   └── requirements.txt
-│   ├── src/
-│   │   ├── config/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── sockets/
-│   │   └── server.js
-│   └── scripts/
-│
-└── frontend/
-    └── src/
-        ├── components/
-        ├── context/
-        ├── pages/
-        ├── App.jsx
-        ├── config.js
-        └── main.jsx
-
-🏗 System Architecture
-
+- Razorpay integration
+- Cash on Delivery
+- Cloudinary image storage
+- Email notifications
+- Referral and wallet system
+- Promotional discount system
+
+---
+
+## 🛠 Technology Stack
+
+| Category | Technologies |
+|---|---|
+| Frontend | React 18, Vite, Tailwind CSS, Framer Motion |
+| Maps | Leaflet.js |
+| Backend | Node.js 20+, Express 5 |
+| Database | MongoDB, Mongoose |
+| Authentication | JWT |
+| Real-Time | Socket.IO |
+| AI Service | Python, Flask, scikit-learn, NumPy, pandas |
+| Payments | Razorpay |
+| Media | Cloudinary |
+| Email | Nodemailer |
+| Deployment | Docker, Render |
+
+---
+
+## 🏗 System Architecture
+
+```mermaid
 flowchart TD
+
+    Customer[Customer]
+    Owner[Restaurant Owner]
+    Driver[Delivery Partner]
+
     React[React Frontend]
-    Express[Express API]
+
+    Express[Node.js + Express API]
     Socket[Socket.IO Server]
-    Flask[Python Flask AI Service]
+
+    AI[Python Flask AI Service]
+
     Mongo[(MongoDB Atlas)]
     Cloudinary[Cloudinary]
     Razorpay[Razorpay]
 
-    React -->|REST API| Express
-    React -->|WebSocket| Socket
-    Express -->|AI Requests| Flask
-    Flask -->|Model Evaluation| Flask
-    Express -->|CRUD| Mongo
-    Socket -->|Location / Order Updates| Mongo
-    React -->|Image Upload| Cloudinary
-    Express -->|Payment| Razorpay
+    Customer --> React
+    Owner --> React
+    Driver --> React
 
-🔐 Environment & Security
+    React --> Express
+    React --> Socket
 
-Application credentials are kept outside the repository through environment variables.
+    Express --> Mongo
+    Express --> AI
+    Express --> Cloudinary
+    Express --> Razorpay
 
-Local Configuration
+    Socket --> Mongo
+    Socket --> React
 
-Create backend/.env locally:
-
-cp backend/.env.example backend/.env
-
-Use private values for:
-
-PORT=5000
-
-MONGO_URI=<private-mongodb-connection-string>
-JWT_SECRET=<private-jwt-secret>
-
-EMAIL=<private-email>
-PASS=<private-email-app-password>
-
-CLOUDINARY_CLOUD_NAME=<cloudinary-cloud-name>
-CLOUDINARY_API_KEY=<cloudinary-api-key>
-CLOUDINARY_API_SECRET=<private-cloudinary-secret>
-
-RAZORPAY_KEY_ID=<razorpay-key-id>
-RAZORPAY_KEY_SECRET=<private-razorpay-secret>
-
-ALLOWED_ORIGINS=http://localhost:5173
-
-Repository Security
-
-.env
-.env.*
-!.env.example
-
-node_modules/
-dist/
-build/
-
-__pycache__/
-*.pyc
-*.log
-
-No production credentials are stored in this repository.
-
-MongoDB credentials, JWT secrets, Razorpay secrets, Cloudinary secrets, SMTP passwords, and other private API keys belong only in local environment files or the hosting provider's secret/environment configuration.
-
-If a credential is ever exposed publicly, it should be revoked and rotated immediately rather than only deleted from the latest commit.
-
-📡 API Overview
-
-Authentication
-
-POST /register
-POST /login
-POST /forgot-password
-POST /verify-otp
-
-Restaurant & Items
-
-GET  /api/shop
-POST /api/shop
-GET  /api/item
-POST /api/item
-
-Orders & Payments
-
-POST /orders
-PUT  /orders/:id/status
-POST /create-razorpay-order
-
-⚡ Real-Time WebSockets
-
-The application uses Socket.IO for real-time communication.
-
-Event
-
-Purpose
-
-join-order
-
-Join an order-specific tracking room
-
-update-location
-
-Send delivery partner coordinates
-
-delivery-tracking
-
-Broadcast live location to the customer
-
-order-created
-
-Notify restaurant owners about new orders
-
-Example location payload:
-
-{
-  "userId": "user-id",
-  "lat": 22.3072,
-  "lng": 73.1812,
-  "orderId": "order-id"
-}
-
-🤖 AI Microservice
-
-The AI engine runs as an independent Flask service.
-
-Recommendation
-
-/recommend
-
-Provides food recommendations using user preferences, previous orders, and cuisine-related information.
-
-Demand Forecasting
-
-/forecast
-
-Uses historical order information to estimate future order demand.
-
-Dynamic Pricing
-
-/dynamic-price
-
-Calculates pricing/delivery-fee adjustments based on current order conditions.
-
-The AI service can use statistical fallbacks when optional ML dependencies are unavailable.
-
-🗄 Database Schemas
-
-User
-
-{
-  "name": "string",
-  "email": "string",
-  "role": "customer | owner | staff",
-  "walletBalance": "number",
-  "location": {
-    "lat": "number",
-    "lng": "number",
-    "updatedAt": "date"
-  },
-  "referralCode": "string"
-}
-
-Shop
-
-{
-  "name": "string",
-  "owner": "ObjectId",
-  "cuisine": "string",
-  "isOpen": "boolean",
-  "location": {
-    "lat": "number",
-    "lng": "number"
-  }
-}
-
-Order
-
-{
-  "customer": "ObjectId",
-  "shop": "ObjectId",
-  "items": [],
-  "total": "number",
-  "status": "pending | preparing | out_for_delivery | delivered",
-  "paymentMethod": "cod | razorpay"
-}
-
-🚢 Deployment
-
-The application is deployed on Render using a Docker-based production setup.
-
-Live Application: https://foodie-rusher.onrender.com/
-
-The production environment uses hosting-provider environment variables for private configuration, keeping application secrets separate from the GitHub repository.
-
-🛠 Troubleshooting
-
-Express 5 wildcard routes
-
-Express 5 uses updated wildcard route syntax. For example:
-
-app.get('*any', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
-});
-
-Node.js version
-
-Use Node.js 20+ for the current dependency setup.
-
-MongoDB connection
-
-If MongoDB fails to connect:
-
-Verify MONGO_URI.
-
-Check MongoDB Atlas network access.
-
-Confirm the database user has the required permissions.
-
-Make sure the URI is stored only in .env/hosting environment variables.
-
-👨‍💻 Author
-
-Nirmal Prajapat
-MERN Stack Developer • C++ DSA
-
-GitHub: https://github.com/nirmal168
-
-Foodie Rusher: https://github.com/nirmal168/Foodie_Rusher
-
-Live Demo: https://foodie-rusher.onrender.com/
+    AI --> Mongo
