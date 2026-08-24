@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, ShoppingCart, Search, MapPin, Menu as MenuIcon, X, Check, ShoppingBag, Home } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, ShoppingCart, Search, MapPin, Menu as MenuIcon, X, Check, ShoppingBag, Home, MoreVertical, UtensilsCrossed, History, Compass } from 'lucide-react';
 import { Link, useLocation as useRouteLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -14,10 +14,27 @@ const Navbar = ({ cartCount }) => {
   const { socket } = useSocket();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const moreMenuRef = useRef(null);
   const routeLocation = useRouteLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setShowMoreMenu(false);
+    setShowNotifications(false);
+  }, [routeLocation.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target)) {
+        setShowMoreMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -62,7 +79,92 @@ const Navbar = ({ cartCount }) => {
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white border-b border-transparent ${isScrolled ? 'shadow-lg border-slate-100 py-3' : 'py-4'}`}>
       <div className="container-max px-4">
-        <div className="flex items-center gap-6 md:gap-12">
+        <div className="flex items-center gap-4 md:gap-8">
+          
+          {/* Left: 3-Dots Quick Menu Button */}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className={`p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer ${
+                showMoreMenu
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-md scale-105'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-[#E23744]'
+              }`}
+              title="Quick Navigation"
+            >
+              <MoreVertical size={20} />
+            </button>
+
+            <AnimatePresence>
+              {showMoreMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  className="absolute left-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 z-[110] overflow-hidden"
+                >
+                  <div className="px-3 py-2 border-b border-slate-50">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Quick Navigation</p>
+                  </div>
+                  <div className="flex flex-col gap-1 py-1">
+                    <Link
+                      to="/"
+                      onClick={() => setShowMoreMenu(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-red-50 hover:text-[#E23744] transition-colors"
+                    >
+                      <Home size={16} />
+                      <span>Home</span>
+                    </Link>
+
+                    {(!user || user.role === 'customer') && (
+                      <Link
+                        to="/menu"
+                        onClick={() => setShowMoreMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-red-50 hover:text-[#E23744] transition-colors"
+                      >
+                        <UtensilsCrossed size={16} />
+                        <span>Order Food</span>
+                      </Link>
+                    )}
+
+                    {user && user.role === 'customer' && (
+                      <Link
+                        to="/profile"
+                        onClick={() => setShowMoreMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-red-50 hover:text-[#E23744] transition-colors"
+                      >
+                        <History size={16} />
+                        <span>Recent Orders</span>
+                      </Link>
+                    )}
+
+                    {user && user.role === 'customer' && (
+                      <Link
+                        to="/tracking"
+                        onClick={() => setShowMoreMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-red-50 hover:text-[#E23744] transition-colors"
+                      >
+                        <Compass size={16} />
+                        <span>Live Tracking</span>
+                      </Link>
+                    )}
+
+                    {(!user || user.role === 'customer') && (
+                      <Link
+                        to="/cart"
+                        onClick={() => setShowMoreMenu(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider text-slate-700 hover:bg-red-50 hover:text-[#E23744] transition-colors"
+                      >
+                        <ShoppingCart size={16} />
+                        <span>My Cart ({cartCount})</span>
+                      </Link>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {/* Logo */}
           <Link to="/" className="flex items-center gap-1 group whitespace-nowrap shrink-0">
             <span className="text-3xl font-black italic tracking-tighter text-slate-900 group-hover:text-[#E23744] transition-colors">
@@ -93,21 +195,21 @@ const Navbar = ({ cartCount }) => {
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-8 shrink-0">
+          <div className="hidden md:flex items-center gap-6 shrink-0 ml-auto">
             <Link to="/" className="flex items-center gap-2 text-slate-600 hover:text-[#E23744] font-black text-[10px] uppercase tracking-widest transition-all">
               <Home size={18} />
               <span>Home</span>
             </Link>
 
-            {user && user.role === 'customer' && (
-              <Link to="/profile" className="flex items-center gap-2 text-slate-600 hover:text-[#E23744] font-black text-[10px] uppercase tracking-widest transition-all">
-                <ShoppingBag size={18} />
-                <span>My Orders</span>
+            {(!user || user.role === 'customer') && (
+              <Link to="/menu" className="flex items-center gap-2 text-slate-600 hover:text-[#E23744] font-black text-[10px] uppercase tracking-widest transition-all">
+                <UtensilsCrossed size={18} />
+                <span>Menu</span>
               </Link>
             )}
 
             {user ? (
-               <div className="flex items-center gap-6">
+               <div className="flex items-center gap-5">
                   {/* Notifications */}
                   <div className="relative">
                     <button 
@@ -141,23 +243,23 @@ const Navbar = ({ cartCount }) => {
                     </AnimatePresence>
                   </div>
 
-                  <div className="flex flex-col items-end mr-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-slate-400">{user.role}</span>
+                  <div className="flex flex-col items-end mr-1">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{user.role}</span>
                     <span className="text-sm font-black text-slate-900">{user.name}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Link to="/profile" className="bg-slate-100 text-slate-700 px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">
-                      {user.role === 'customer' ? 'My Orders' : 'Dashboard'}
+                  <div className="flex items-center gap-2">
+                    <Link to="/profile" className="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all">
+                      {user.role === 'customer' ? 'My Profile' : 'Dashboard'}
                     </Link>
-                    <button onClick={() => { logout(); toast.success("Logged out successfully"); navigate('/'); }} className="bg-slate-900 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E23744] transition-all shadow-md">
+                    <button onClick={() => { logout(); toast.success("Logged out successfully"); navigate('/'); }} className="bg-slate-900 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E23744] transition-all shadow-md cursor-pointer">
                       Logout
                     </button>
                   </div>
                </div>
             ) : (
-                <div className="flex items-center gap-6">
-                    <Link to="/login" className="text-slate-500 hover:text-slate-900 text-sm font-black uppercase tracking-widest transition-colors">Log in</Link>
-                    <Link to="/signup" className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E23744] transition-all shadow-lg active:scale-95">Sign up</Link>
+                <div className="flex items-center gap-4">
+                    <Link to="/login" className="text-slate-500 hover:text-slate-900 text-xs font-black uppercase tracking-widest transition-colors">Log in</Link>
+                    <Link to="/signup" className="bg-slate-900 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#E23744] transition-all shadow-lg active:scale-95">Sign up</Link>
                 </div>
             )}
             
