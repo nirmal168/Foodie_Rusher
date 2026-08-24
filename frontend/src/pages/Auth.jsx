@@ -37,7 +37,7 @@ const Auth = ({ defaultIsLogin = true }) => {
         navigate('/');
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Authentication failed');
+      toast.error(err.response?.data?.error || (err.message === 'Network Error' ? 'Cannot connect to backend server. Please make sure the backend is running on port 5000.' : (err.message || 'Authentication failed')));
     }
   };
 
@@ -94,7 +94,7 @@ const Auth = ({ defaultIsLogin = true }) => {
         toast.success(`Filled ${targetRole} sign-up form with test credentials!`);
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Authentication failed');
+      toast.error(err.response?.data?.error || (err.message === 'Network Error' ? 'Cannot connect to backend server. Please make sure the backend is running on port 5000.' : (err.message || 'Authentication failed')));
     }
   };
 
@@ -496,7 +496,10 @@ const Auth = ({ defaultIsLogin = true }) => {
            </button>
            <button 
              type="button" 
-             onClick={() => handleQuickLogin('customer@test.com', 'password123', 'customer')}
+             onClick={() => {
+               const email = role === 'owner' ? 'owner@test.com' : role === 'staff' ? 'staff@test.com' : 'customer@test.com';
+               handleQuickLogin(email, 'password123', role);
+             }}
              className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-amber-50 hover:border-amber-100 transition-all shadow-sm gap-1 group"
              title="Quick Demo Login"
            >
