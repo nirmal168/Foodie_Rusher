@@ -111,7 +111,7 @@ const curatedCategoryItems = [
     price: 149,
     foodType: "veg",
     shopName: "Sweet Cravings",
-    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1551024506-0bccd828d307?q=80&w=800&auto=format&fit=crop"
   },
   {
     _id: "curated_dessert_2",
@@ -613,7 +613,10 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
                       <img 
                         src={item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop'} 
                         alt={item.name} 
-                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop'; }}
+                        onError={(e) => { 
+                          e.currentTarget.onerror = null; 
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop'; 
+                        }}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-md border border-white/50 flex items-center justify-center">
