@@ -111,7 +111,7 @@ const curatedCategoryItems = [
     price: 149,
     foodType: "veg",
     shopName: "Sweet Cravings",
-    image: "https://images.unsplash.com/photo-1624353365286-3f8d62ffff51?q=80&w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop"
   },
   {
     _id: "curated_dessert_2",
@@ -232,7 +232,7 @@ const curatedCategoryItems = [
     price: 269,
     foodType: "veg",
     shopName: "Italiano Bistro",
-    image: "https://images.unsplash.com/photo-1621996346565-e3d5d62817d2?q=80&w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?q=80&w=800&auto=format&fit=crop"
   },
   {
     _id: "curated_pasta_3",
@@ -269,7 +269,7 @@ const curatedCategoryItems = [
     price: 139,
     foodType: "veg",
     shopName: "Snack Shack",
-    image: "https://images.unsplash.com/photo-1639024471287-035186f555dd?q=80&w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1585238342024-78d387f4a707?q=80&w=800&auto=format&fit=crop"
   }
 ];
 
@@ -462,7 +462,12 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
                     className="flex flex-col items-center gap-3 shrink-0 focus:outline-none group cursor-pointer"
                   >
                     <div className={`w-24 h-24 rounded-full overflow-hidden border-4 transition-all duration-300 ${isSelected ? 'border-[#E23744] scale-110 shadow-xl shadow-red-200 ring-4 ring-[#E23744]/20' : 'border-white shadow-md group-hover:scale-105 group-hover:border-red-100'}`}>
-                      <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                      <img 
+                        src={cat.image} 
+                        alt={cat.name} 
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=200&auto=format&fit=crop'; }}
+                        className="w-full h-full object-cover" 
+                      />
                     </div>
                     <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isSelected ? 'text-[#E23744] font-black scale-105' : 'text-slate-500 group-hover:text-slate-800'}`}>{cat.name}</span>
                   </button>
@@ -516,8 +521,9 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img 
-                        src={shop.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=600'} 
+                        src={shop.image || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=600&auto=format&fit=crop'} 
                         alt={shop.name}
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=600&auto=format&fit=crop'; }}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
@@ -605,8 +611,9 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
                     {/* Item Image */}
                     <div className="relative h-48 overflow-hidden bg-slate-50">
                       <img 
-                        src={item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'} 
+                        src={item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop'} 
                         alt={item.name} 
+                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop'; }}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md p-2 rounded-xl shadow-md border border-white/50 flex items-center justify-center">

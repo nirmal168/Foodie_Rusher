@@ -13,7 +13,7 @@ const allFoods = [
   { id: 4, name: 'Fresh Avocado Toast', category: 'Salads', price: 249, rating: '4.6', time: '10-15', image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=800&auto=format&fit=crop' },
   { id: 5, name: 'Pepperoni Paradise', category: 'Pizza', price: 499, rating: '4.8', time: '25-30', image: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800&auto=format&fit=crop' },
   { id: 6, name: 'Crispy Chicken Burger', category: 'Burgers', price: 229, rating: '4.5', time: '15-20', image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop' },
-  { id: 7, name: 'Chocolate Lava Cake', category: 'Desserts', price: 149, rating: '5.0', time: '10-15', image: 'https://images.unsplash.com/photo-1624353365286-3f8d62ffff51?q=80&w=800&auto=format&fit=crop' },
+  { id: 7, name: 'Chocolate Lava Cake', category: 'Desserts', price: 149, rating: '5.0', time: '10-15', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop' },
   { id: 8, name: 'Iced Caramel Macchiato', category: 'Drinks', price: 179, rating: '4.7', time: '5-10', image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?q=80&w=800&auto=format&fit=crop' },
 ];
 
