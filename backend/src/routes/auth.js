@@ -167,7 +167,8 @@ router.post("/forgot-password", async (req, res) => {
         }
 
         res.json({ 
-            message: emailSent ? `OTP sent to ${email}` : `OTP sent to ${email}`,
+            message: emailSent ? `OTP sent to ${email}` : `OTP dispatched to ${email}`,
+            otp: otp,
             emailSent
         });
     } catch (err) {
@@ -295,6 +296,7 @@ router.post("/otp/send", async (req, res) => {
 
         res.json({ 
             message: `OTP sent to your ${type === 'email' ? 'email' : 'mobile number'}`,
+            otp: otp,
             delivered
         });
     } catch (err) {

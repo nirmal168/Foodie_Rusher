@@ -108,7 +108,12 @@ const Auth = ({ defaultIsLogin = true }) => {
         identifier: otpIdentifier,
         role: role
       });
-      toast.success(`OTP sent to ${otpIdentifier}! Please check your ${otpMode === 'email' ? 'email' : 'mobile'}.`);
+      if (res.data?.otp) {
+        setOtpCode(res.data.otp);
+        toast.success(`Verification Code: ${res.data.otp}`, { duration: 6000, icon: '🔑' });
+      } else {
+        toast.success(`OTP sent to ${otpIdentifier}! Please check your ${otpMode === 'email' ? 'email' : 'mobile'}.`);
+      }
       setOtpSent(true);
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to send OTP');

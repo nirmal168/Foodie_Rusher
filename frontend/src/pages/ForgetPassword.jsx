@@ -23,8 +23,13 @@ const ForgetPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('/forgot-password', { email });
-      toast.success(`OTP sent to ${email}! Please check your inbox.`);
+      const res = await axios.post('/forgot-password', { email });
+      if (res.data?.otp) {
+        setOtp(res.data.otp);
+        toast.success(`Verification OTP: ${res.data.otp}`, { duration: 6000, icon: '🔑' });
+      } else {
+        toast.success(`OTP sent to ${email}! Please check your inbox.`);
+      }
       setStep(2);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to send OTP. Please check your email.');
