@@ -14,6 +14,7 @@ const locationsRouter = require("./routes/locations");
 const notificationsRouter = require("./routes/notifications");
 const shopRouter = require("./routes/shop");
 const itemsRouter = require("./routes/items");
+const aiRouter = require("./routes/ai");
 
 const app = express();
 const server = http.createServer(app);
@@ -66,6 +67,8 @@ app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 app.use("/", authRouter); // handles login, register, me
 app.use("/auth", authRouter); // alias for auth routes (e.g., /auth/register)
 app.use("/", ordersRouter); // handles orders, staff, payments, etc.
+app.use("/", aiRouter); // handles /recommend, /forecast
+app.use("/api/ai", aiRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/locations", locationsRouter);
 app.use("/api/notifications", notificationsRouter);

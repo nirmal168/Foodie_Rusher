@@ -25,6 +25,14 @@ export default defineConfig({
       '/orders': {
         target: 'http://localhost:5000',
         changeOrigin: true
+      },
+      '/recommend': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      },
+      '/forecast': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
       }
     }
   }
