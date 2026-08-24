@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, LogIn, Globe, Shield, ChefHat, Bike, Phone, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, LogIn, Globe, Shield, ChefHat, Bike, Phone, CheckCircle, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -222,11 +222,22 @@ const Auth = ({ defaultIsLogin = true }) => {
                   required
                   className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-bold text-center text-lg tracking-[0.2em]`}
                 />
+              </div>
+              {otpCode ? (
+                <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3 flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-2 text-emerald-900">
+                    <Sparkles size={16} className="text-emerald-500 animate-pulse" />
+                    <span className="text-xs font-bold">Verification Code:</span>
+                    <span className="text-sm font-black tracking-widest bg-white px-2.5 py-0.5 rounded border border-emerald-300 text-emerald-600">{otpCode}</span>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Ready</span>
                 </div>
+              ) : (
                 <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">
                   Enter the 6-digit OTP code sent to your {otpMode === 'email' ? 'email address' : 'mobile number'}
                 </p>
-              </div>
+              )}
+            </div>
 
               <button
                 type="submit"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Key, ArrowRight, ArrowLeft, CheckCircle, Phone, Globe } from 'lucide-react';
+import { Mail, Lock, Key, ArrowRight, ArrowLeft, CheckCircle, Phone, Globe, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -187,9 +187,20 @@ const ForgetPassword = () => {
                     className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-colors font-medium text-slate-900 text-sm placeholder:text-slate-300 tracking-[0.2em] text-center font-bold text-lg"
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">
-                  Enter the 6-digit verification code sent to {email}
-                </p>
+                {otp ? (
+                  <div className="bg-red-50 border border-red-200/80 rounded-xl p-3 flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-2 text-red-900">
+                      <Sparkles size={16} className="text-red-500 animate-pulse" />
+                      <span className="text-xs font-bold">Verification Code:</span>
+                      <span className="text-sm font-black tracking-widest bg-white px-2.5 py-0.5 rounded border border-red-300 text-red-600">{otp}</span>
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-green-600 bg-green-100 px-2 py-0.5 rounded">Ready</span>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400 font-medium mt-1 ml-1">
+                    Enter the 6-digit verification code sent to {email}
+                  </p>
+                )}
               </div>
 
               <button
