@@ -18,6 +18,261 @@ const categoriesList = [
   { name: "Sides", image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=200&auto=format&fit=crop" }
 ];
 
+const curatedCategoryItems = [
+  // Pizza
+  {
+    _id: "curated_pizza_1",
+    name: "Margherita Basilico Pizza",
+    category: "Pizza",
+    price: 399,
+    foodType: "veg",
+    shopName: "Little Italy Kitchen",
+    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_pizza_2",
+    name: "Pepperoni Feast Pizza",
+    category: "Pizza",
+    price: 499,
+    foodType: "non-veg",
+    shopName: "Pizza Crust Co.",
+    image: "https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_pizza_3",
+    name: "Farmhouse Veggie Supreme",
+    category: "Pizza",
+    price: 449,
+    foodType: "veg",
+    shopName: "Woodfire Pizzeria",
+    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=800&auto=format&fit=crop"
+  },
+  // Burger
+  {
+    _id: "curated_burger_1",
+    name: "Double Cheddar Smash Burger",
+    category: "Burger",
+    price: 199,
+    foodType: "veg",
+    shopName: "Burger Spot",
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_burger_2",
+    name: "Crispy Golden Chicken Burger",
+    category: "Burger",
+    price: 229,
+    foodType: "non-veg",
+    shopName: "The Grill House",
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_burger_3",
+    name: "Spicy Paneer Tikka Burger",
+    category: "Burger",
+    price: 179,
+    foodType: "veg",
+    shopName: "Burger Factory",
+    image: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?q=80&w=800&auto=format&fit=crop"
+  },
+  // Beverages
+  {
+    _id: "curated_bev_1",
+    name: "Iced Caramel Macchiato",
+    category: "Beverages",
+    price: 179,
+    foodType: "veg",
+    shopName: "Cafe Mocha",
+    image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_bev_2",
+    name: "Fresh Mint Mojito Cooler",
+    category: "Beverages",
+    price: 129,
+    foodType: "veg",
+    shopName: "Juice Lounge",
+    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_bev_3",
+    name: "Belgian Dark Chocolate Shake",
+    category: "Beverages",
+    price: 199,
+    foodType: "veg",
+    shopName: "Shake Haven",
+    image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?q=80&w=800&auto=format&fit=crop"
+  },
+  // Dessert
+  {
+    _id: "curated_dessert_1",
+    name: "Molten Chocolate Lava Cake",
+    category: "Dessert",
+    price: 149,
+    foodType: "veg",
+    shopName: "Sweet Cravings",
+    image: "https://images.unsplash.com/photo-1624353365286-3f8d62ffff51?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_dessert_2",
+    name: "Classic New York Cheesecake",
+    category: "Dessert",
+    price: 249,
+    foodType: "veg",
+    shopName: "The Bakery Loft",
+    image: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_dessert_3",
+    name: "Warm Walnut Brownie Fudge",
+    category: "Dessert",
+    price: 169,
+    foodType: "veg",
+    shopName: "Choco Treats",
+    image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=800&auto=format&fit=crop"
+  },
+  // Chinese
+  {
+    _id: "curated_chinese_1",
+    name: "Hakka Veg Noodles",
+    category: "Chinese",
+    price: 219,
+    foodType: "veg",
+    shopName: "Wok & Roll",
+    image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_chinese_2",
+    name: "Crispy Manchurian Gravy Bowl",
+    category: "Chinese",
+    price: 239,
+    foodType: "veg",
+    shopName: "Dragon Bowl",
+    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_chinese_3",
+    name: "Fiery Schezwan Fried Rice",
+    category: "Chinese",
+    price: 229,
+    foodType: "veg",
+    shopName: "Golden Dragon",
+    image: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?q=80&w=800&auto=format&fit=crop"
+  },
+  // Main Course
+  {
+    _id: "curated_main_1",
+    name: "Paneer Butter Masala & Naan",
+    category: "Main Course",
+    price: 329,
+    foodType: "veg",
+    shopName: "Royal Dhaba",
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_main_2",
+    name: "Dal Makhani Royal Thali",
+    category: "Main Course",
+    price: 279,
+    foodType: "veg",
+    shopName: "Punjab Express",
+    image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_main_3",
+    name: "Aromatic Hyderabadi Dum Biryani",
+    category: "Main Course",
+    price: 349,
+    foodType: "veg",
+    shopName: "Biryani Mahal",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=800&auto=format&fit=crop"
+  },
+  // Sandwich
+  {
+    _id: "curated_sandwich_1",
+    name: "Grilled Cheese & Sweet Corn",
+    category: "Sandwich",
+    price: 159,
+    foodType: "veg",
+    shopName: "Toast & Roast",
+    image: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_sandwich_2",
+    name: "Smoked Peri-Peri Club Sandwich",
+    category: "Sandwich",
+    price: 219,
+    foodType: "non-veg",
+    shopName: "Urban Club Sandwich",
+    image: "https://images.unsplash.com/photo-1553909489-cd47e0907980?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_sandwich_3",
+    name: "Fresh Avocado Herb Toast",
+    category: "Sandwich",
+    price: 239,
+    foodType: "veg",
+    shopName: "Healthy Bites",
+    image: "https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=800&auto=format&fit=crop"
+  },
+  // Pasta
+  {
+    _id: "curated_pasta_1",
+    name: "Creamy Alfredo Fettuccine",
+    category: "Pasta",
+    price: 299,
+    foodType: "veg",
+    shopName: "Pasta Fresca",
+    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_pasta_2",
+    name: "Spicy Penne Arrabbiata",
+    category: "Pasta",
+    price: 269,
+    foodType: "veg",
+    shopName: "Italiano Bistro",
+    image: "https://images.unsplash.com/photo-1621996346565-e3d5d62817d2?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_pasta_3",
+    name: "Baked Four-Cheese Lasagna",
+    category: "Pasta",
+    price: 369,
+    foodType: "veg",
+    shopName: "Roma Ristorante",
+    image: "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?q=80&w=800&auto=format&fit=crop"
+  },
+  // Sides
+  {
+    _id: "curated_sides_1",
+    name: "Peri-Peri Crinkle Fries",
+    category: "Sides",
+    price: 129,
+    foodType: "veg",
+    shopName: "Crispy Crunch",
+    image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_sides_2",
+    name: "Cheesy Garlic Herb Bread",
+    category: "Sides",
+    price: 169,
+    foodType: "veg",
+    shopName: "Little Italy Kitchen",
+    image: "https://images.unsplash.com/photo-1619881590738-a111d176d906?q=80&w=800&auto=format&fit=crop"
+  },
+  {
+    _id: "curated_sides_3",
+    name: "Crispy Golden Onion Rings",
+    category: "Sides",
+    price: 139,
+    foodType: "veg",
+    shopName: "Snack Shack",
+    image: "https://images.unsplash.com/photo-1639024471287-035186f555dd?q=80&w=800&auto=format&fit=crop"
+  }
+];
+
 const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
   const { districts, selectedDistrict, setSelectedDistrict, areas, selectedArea, setSelectedArea } = useLocation();
   const navigate = useNavigate();
@@ -31,11 +286,19 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
 
   const cateScrollRef = useRef(null);
   const shopScrollRef = useRef(null);
+  const foodSectionRef = useRef(null);
 
   const scroll = (ref, direction) => {
     if (ref.current) {
       const scrollAmount = direction === 'left' ? -350 : 350;
       ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const handleCategorySelect = (categoryName) => {
+    setSelectedCategory(categoryName);
+    if (foodSectionRef.current) {
+      foodSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -56,19 +319,17 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
   }, [selectedDistrict, selectedArea]);
 
   useEffect(() => {
-    if (shops?.length) {
-      // Flatten items from all shops to show suggested food items
-      const allItems = shops.flatMap(shop => 
-        (shop.items || []).map(item => ({
-          ...item,
-          shopName: shop.name,
-          shopId: shop._id
-        }))
-      );
-      setSuggestedItems(allItems);
-    } else {
-      setSuggestedItems([]);
-    }
+    // Combine real shop menu items with curated items for complete category coverage
+    const liveItems = (shops || []).flatMap(shop => 
+      (shop.items || []).map(item => ({
+        ...item,
+        shopName: shop.name,
+        shopId: shop._id
+      }))
+    );
+
+    const mergedItems = [...liveItems, ...curatedCategoryItems];
+    setSuggestedItems(mergedItems);
   }, [shops]);
 
   const filteredShops = shops.filter(shop => {
@@ -79,9 +340,11 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
   });
 
   const filteredItems = suggestedItems.filter(item => {
-    const matchesCategory = selectedCategory === "All" || item.category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          item.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const itemCat = (item.category || '').toLowerCase();
+    const selCat = selectedCategory.toLowerCase();
+    const matchesCategory = selCat === "all" || itemCat === selCat || (selCat === "dessert" && itemCat === "desserts") || (selCat === "burger" && itemCat === "burgers");
+    const matchesSearch = (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (item.category || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -195,13 +458,13 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
                 return (
                   <button
                     key={idx}
-                    onClick={() => setSelectedCategory(cat.name)}
-                    className="flex flex-col items-center gap-3 shrink-0 focus:outline-none group"
+                    onClick={() => handleCategorySelect(cat.name)}
+                    className="flex flex-col items-center gap-3 shrink-0 focus:outline-none group cursor-pointer"
                   >
-                    <div className={`w-24 h-24 rounded-full overflow-hidden border-4 transition-all duration-300 ${isSelected ? 'border-[#E23744] scale-105 shadow-xl shadow-red-100' : 'border-white shadow-md group-hover:scale-105'}`}>
+                    <div className={`w-24 h-24 rounded-full overflow-hidden border-4 transition-all duration-300 ${isSelected ? 'border-[#E23744] scale-110 shadow-xl shadow-red-200 ring-4 ring-[#E23744]/20' : 'border-white shadow-md group-hover:scale-105 group-hover:border-red-100'}`}>
                       <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
                     </div>
-                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isSelected ? 'text-[#E23744]' : 'text-slate-500 group-hover:text-slate-800'}`}>{cat.name}</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${isSelected ? 'text-[#E23744] font-black scale-105' : 'text-slate-500 group-hover:text-slate-800'}`}>{cat.name}</span>
                   </button>
                 );
               })}
@@ -300,14 +563,32 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
         </section>
 
         {/* Suggested Food Items Section */}
-        <section className="space-y-6">
+        <section ref={foodSectionRef} className="space-y-6 pt-4 scroll-mt-28">
           <div className="flex justify-between items-center border-b pb-4">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic flex items-center gap-3">
-              <Utensils className="text-[#E23744]" /> Suggested Food Items
-            </h2>
-            <span className="bg-[#E23744]/10 text-[#E23744] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
-              {filteredItems.length} Found
-            </span>
+            <div>
+              <h2 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic flex items-center gap-3">
+                <Utensils className="text-[#E23744]" /> 
+                {selectedCategory !== "All" ? `${selectedCategory} Specials` : "Suggested Food Items"}
+              </h2>
+              {selectedCategory !== "All" && (
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                  Showing top rated {selectedCategory.toLowerCase()} options • Click "ALL" to reset
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              {selectedCategory !== "All" && (
+                <button 
+                  onClick={() => setSelectedCategory("All")}
+                  className="text-xs font-black uppercase tracking-widest text-[#E23744] hover:underline cursor-pointer"
+                >
+                  View All
+                </button>
+              )}
+              <span className="bg-[#E23744]/10 text-[#E23744] px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest">
+                {filteredItems.length} Dishes
+              </span>
+            </div>
           </div>
 
           {filteredItems.length > 0 ? (
