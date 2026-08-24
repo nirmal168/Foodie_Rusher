@@ -73,7 +73,7 @@ app.use("/api/shop", shopRouter);
 app.use("/api/item", itemsRouter);
 
 // Wildcard route to serve React index.html for client-side routing
-app.get('*', (req, res) => {
+app.get('*any', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
 });
 
