@@ -21,7 +21,23 @@ const server = http.createServer(app);
 initSockets(server);
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(",") 
+      : [];
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+      return callback(null, true);
+    }
+    if (process.env.NODE_ENV === 'production') {
+      return callback(new Error('Not allowed by CORS'));
+    }
+    return callback(null, true); // Dev fallback: reflect origin
+  },
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const User = require('./models/User');
@@ -40,12 +56,13 @@ mongoose.connection.once('open', async () => {
         }
     }
 });
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 // Mounting Routes
 app.use("/", authRouter); // handles login, register, me
 app.use("/auth", authRouter); // alias for auth routes (e.g., /auth/register)
 app.use("/", ordersRouter); // handles orders, staff, payments, etc.
+app.use("/api/profile", profileRouter);
 app.use("/api/locations", locationsRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/shop", shopRouter);

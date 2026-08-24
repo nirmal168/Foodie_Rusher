@@ -13,20 +13,25 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 app = Flask(__name__)
 CORS(app)
 
+# Get absolute path to the directory containing this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+recommendation_model_path = os.path.join(script_dir, "hybrid_food_model.pkl")
+demand_model_path = os.path.join(script_dir, "gru_demand_model.h5")
+
 # Attempt to load models at startup
 try:
-    rf_model = joblib.load("hybrid_food_model.pkl")
-    print("✅ Hybrid Recommendation Model loaded successfully.")
+    rf_model = joblib.load(recommendation_model_path)
+    print("SUCCESS: Hybrid Recommendation Model loaded successfully.")
 except Exception as e:
-    print("❌ Error loading hybrid model:", e)
+    print("ERROR loading hybrid model:", e)
     rf_model = None
 
 try:
     from tensorflow.keras.models import load_model
-    gru_model = load_model("gru_demand_model.h5")
-    print("✅ GRU Demand Forecasting Model loaded successfully.")
+    gru_model = load_model(demand_model_path)
+    print("SUCCESS: GRU Demand Forecasting Model loaded successfully.")
 except Exception as e:
-    print("❌ Error loading gru model:", e)
+    print("ERROR loading gru model:", e)
     gru_model = None
 
 @app.route('/recommend', methods=['POST'])
@@ -75,5 +80,6 @@ def forecast():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    print("🚀 Starting AI Microservice on port 5001")
-    app.run(port=5001, debug=True)
+    port = int(os.environ.get("PORT", 5002))
+    print(f"Starting AI Microservice on port {port}")
+    app.run(host="0.0.0.0", port=port, debug=True)

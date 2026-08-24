@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Sparkles, CloudRain, Sun, HandCoins, CalendarHeart, Loader2 } from 'lucide-react';
+import { AI_BASE_URL } from '../config';
 
 const AIFoodRecommender = ({ onRecommend }) => {
   const [budget, setBudget] = useState(250);
@@ -15,7 +16,7 @@ const AIFoodRecommender = ({ onRecommend }) => {
     setLoading(true);
     setRecommendation(null);
     try {
-      const response = await axios.post('http://localhost:5001/recommend', {
+      const response = await axios.post(`${AI_BASE_URL}/recommend`, {
         time: parseInt(time),
         budget: parseInt(budget),
         weather: parseInt(weather),

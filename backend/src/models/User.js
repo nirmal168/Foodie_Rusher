@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     employerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     inviteCode: { type: String, index: true, sparse: true },
     staffRegistrationCode: { type: String, sparse: true },
+    phone: { type: String, unique: true, sparse: true },
     resetOtp: { type: String },
     isOtpVerified: { type: Boolean, default: false },
     otpExpires: { type: Date }

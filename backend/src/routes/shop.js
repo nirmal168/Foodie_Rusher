@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Shop = require("../models/Shop");
-const authenticate = require("../middlewares/auth");
+const authenticate = require("../middleware/auth");
 const { upload } = require("../middleware/multer");
 const uploadOnCloudinary = require("../utils/cloudinary");
 

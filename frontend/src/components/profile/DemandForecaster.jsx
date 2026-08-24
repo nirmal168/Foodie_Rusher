@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TrendingUp, Activity, AlertCircle, Loader2 } from 'lucide-react';
+import { AI_BASE_URL } from '../../config';
 
 const DemandForecaster = ({ recentOrders }) => {
   const [forecast, setForecast] = useState(null);
@@ -21,7 +22,7 @@ const DemandForecaster = ({ recentOrders }) => {
         Math.floor(base * 1.2)
       ];
 
-      const res = await axios.post('http://localhost:5001/forecast', { history });
+      const res = await axios.post(`${AI_BASE_URL}/forecast`, { history });
       setForecast(res.data.predicted_demand);
     } catch (err) {
       console.error(err);

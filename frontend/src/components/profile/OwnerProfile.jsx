@@ -46,7 +46,7 @@ const OwnerProfile = ({ orders, refresh }) => {
   const fetchStaffData = async () => {
     const token = localStorage.getItem('token');
     try {
-      const hiredRes = await axios.get('http://localhost:5001/api/staff', { 
+      const hiredRes = await axios.get('/api/staff', { 
          headers: { Authorization: `Bearer ${token}` } 
       });
       setStaffList(hiredRes.data);
@@ -59,7 +59,7 @@ const OwnerProfile = ({ orders, refresh }) => {
     try {
       setShopLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5001/api/shop/get-my', {
+      const res = await axios.get('/api/shop/get-my', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShop(res.data);
@@ -91,7 +91,7 @@ const OwnerProfile = ({ orders, refresh }) => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    await axios.get('http://localhost:5001/me', { headers: { Authorization: `Bearer ${token}` } });
+                    await axios.get('/me', { headers: { Authorization: `Bearer ${token}` } });
                 } catch (e) {}
             }
         };
@@ -103,7 +103,7 @@ const OwnerProfile = ({ orders, refresh }) => {
     if (!localDistrict) return;
     const fetchAreas = async () => {
       try {
-        const res = await axios.get(`http://localhost:5001/api/locations/${localDistrict}/areas`);
+        const res = await axios.get(`/api/locations/${localDistrict}/areas`);
         setLocalAreas(res.data);
       } catch (err) {
         console.error("Error fetching areas", err);
@@ -117,7 +117,7 @@ const OwnerProfile = ({ orders, refresh }) => {
     if (!staffId) return toast.error("Please select a staff member");
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5001/api/orders/${orderId}/assign`, { staffId }, {
+      await axios.post(`/api/orders/${orderId}/assign`, { staffId }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success("Staff assigned and order accepted!");
@@ -128,7 +128,7 @@ const OwnerProfile = ({ orders, refresh }) => {
   const updateStatus = async (id, status) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5001/admin/orders/${id}/status`, { status }, {
+      await axios.put(`/admin/orders/${id}/status`, { status }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success(`Order marked as ${status.replace('-', ' ')}`);
@@ -166,7 +166,7 @@ const OwnerProfile = ({ orders, refresh }) => {
 
     try {
       setShopLoading(true);
-      const res = await axios.post("http://localhost:5001/api/shop/create-edit", formData, {
+      const res = await axios.post("/api/shop/create-edit", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
@@ -199,7 +199,7 @@ const OwnerProfile = ({ orders, refresh }) => {
         if (!itemForm.imageFile && editingItem.image) {
           formData.append("existingImage", editingItem.image);
         }
-        res = await axios.put(`http://localhost:5001/api/item/edit/${editingItem._id}`, formData, {
+        res = await axios.put(`/api/item/edit/${editingItem._id}`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data"
@@ -207,7 +207,7 @@ const OwnerProfile = ({ orders, refresh }) => {
         });
         toast.success("Menu item updated successfully!");
       } else {
-        res = await axios.post("http://localhost:5001/api/item/add", formData, {
+        res = await axios.post("/api/item/add", formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data"
@@ -228,7 +228,7 @@ const OwnerProfile = ({ orders, refresh }) => {
     if (!window.confirm("Are you sure you want to delete this menu item?")) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await axios.delete(`http://localhost:5001/api/item/delete/${itemId}`, {
+      const res = await axios.delete(`/api/item/delete/${itemId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShop(res.data);

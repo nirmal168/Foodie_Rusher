@@ -21,7 +21,7 @@ const ShopMenu = ({ onAddToCart, cart }) => {
     const fetchShopDetails = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5001/api/item/get-by-shop/${shopId}`);
+        const res = await axios.get(`/api/item/get-by-shop/${shopId}`);
         setShop(res.data.shop);
         setItems(res.data.items);
       } catch (err) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Truck, CheckCircle, Navigation, Share2, MapPin, Play, Square, Package } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -14,12 +14,100 @@ const StaffProfile = ({ orders, refresh }) => {
   const [watchId, setWatchId] = useState(null);
   const [simIntervalId, setSimIntervalId] = useState(null);
 
+  const [currentCoords, setCurrentCoords] = useState([23.0298, 72.5333]);
+  const mapContainerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const pathRef = useRef(null);
+
+  const restaurantCoords = [23.0298, 72.5333];
+  const customerCoords = [23.0350, 72.5293];
+
   useEffect(() => {
     return () => {
       if (simIntervalId) clearInterval(simIntervalId);
       if (watchId) navigator.geolocation.clearWatch(watchId);
     };
   }, [simIntervalId, watchId]);
+
+  // Leaflet map initialization
+  useEffect(() => {
+    if (!isLive || !mapContainerRef.current) {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+        pathRef.current = null;
+      }
+      return;
+    }
+
+    if (mapRef.current) return;
+
+    if (typeof window.L === 'undefined') return;
+    const L = window.L;
+
+    const map = L.map(mapContainerRef.current, {
+      center: restaurantCoords,
+      zoom: 14,
+      zoomControl: false
+    });
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }).addTo(map);
+
+    const createCustomIcon = (color, svgPath) => {
+      return L.divIcon({
+        className: 'custom-leaflet-icon',
+        html: `<div style="background-color: ${color}; width: 38px; height: 38px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white;">${svgPath}</div>`,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
+      });
+    };
+
+    const restaurantIcon = createCustomIcon('#E23744', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11V9a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="16" r="3"/><path d="M9 16v6h6v-6"/></svg>');
+    const customerIcon = createCustomIcon('#3B82F6', '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M11.5 9.5 14 12"/><path d="M22 2v3h-3l-9 9"/><path d="M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/></svg>');
+
+    L.marker(restaurantCoords, { icon: restaurantIcon }).addTo(map).bindPopup("<b>Restaurant</b>");
+    L.marker(customerCoords, { icon: customerIcon }).addTo(map).bindPopup("<b>Customer</b>");
+
+    mapRef.current = map;
+  }, [isLive]);
+
+  // Leaflet map live coordinates update
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const L = window.L;
+
+    if (!markerRef.current) {
+      const bikeIcon = L.divIcon({
+        className: 'custom-leaflet-icon',
+        html: `<div style="background-color: #10B981; width: 42px; height: 42px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 15px rgba(16,185,129,0.4); display: flex; align-items: center; justify-content: center; color: white; animation: pulse 2s infinite;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6h1a2 2 0 0 1 2 2v2"/><path d="M12 17.5V14H7.5L4 9"/><path d="m13 6-4 7h6l-3.5 4.5"/></svg></div>`,
+        iconSize: [42, 42],
+        iconAnchor: [21, 21]
+      });
+      markerRef.current = L.marker(currentCoords, { icon: bikeIcon }).addTo(mapRef.current).bindPopup("<b>Your Current Position</b>").openPopup();
+    } else {
+      markerRef.current.setLatLng(currentCoords);
+    }
+
+    if (pathRef.current) {
+      pathRef.current.setLatLngs([restaurantCoords, currentCoords, customerCoords]);
+    } else {
+      pathRef.current = L.polyline([restaurantCoords, currentCoords, customerCoords], {
+        color: '#E23744',
+        weight: 4,
+        dashArray: '8, 8',
+        opacity: 0.8
+      }).addTo(mapRef.current);
+    }
+
+    const bounds = L.latLngBounds([restaurantCoords, currentCoords, customerCoords]);
+    mapRef.current.fitBounds(bounds, { padding: [40, 40] });
+  }, [currentCoords]);
 
   const startTracking = (orderId) => {
     if (!navigator.geolocation) {
@@ -29,6 +117,7 @@ const StaffProfile = ({ orders, refresh }) => {
     const id = navigator.geolocation.watchPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
+        setCurrentCoords([latitude, longitude]);
         updateLocation(latitude, longitude, orderId);
         console.log(`Updated location for order ${orderId}: ${latitude}, ${longitude}`);
       },
@@ -77,11 +166,13 @@ const StaffProfile = ({ orders, refresh }) => {
 
     let step = 0;
     // Immediate first update
+    setCurrentCoords([route[0].lat, route[0].lng]);
     updateLocation(route[0].lat, route[0].lng, orderId);
 
     const interval = setInterval(() => {
       step++;
       if (step < route.length) {
+        setCurrentCoords([route[step].lat, route[step].lng]);
         updateLocation(route[step].lat, route[step].lng, orderId);
         console.log(`[Sim] Updated location: ${route[step].lat}, ${route[step].lng}`);
       } else {
@@ -108,7 +199,7 @@ const StaffProfile = ({ orders, refresh }) => {
   const handlePickup = async (orderId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5001/api/orders/${orderId}/pickup`, {}, {
+      await axios.post(`/api/orders/${orderId}/pickup`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Order Picked Up!');
@@ -120,7 +211,7 @@ const StaffProfile = ({ orders, refresh }) => {
     if (isLive) stopTracking();
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`http://localhost:5001/api/orders/${orderId}/complete`, {}, {
+      await axios.post(`/api/orders/${orderId}/complete`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Delivery Completed!');
@@ -129,7 +220,7 @@ const StaffProfile = ({ orders, refresh }) => {
   };
 
   const handleShare = (order) => {
-    const text = `I'm delivering your order #${order._id.slice(-6)} from FoodieRusher! Track me here: http://localhost:5173/profile`;
+    const text = `I'm delivering your order #${order._id.slice(-6)} from FoodieRusher! Track me here: ${window.location.origin}/profile`;
     if (navigator.share) {
       navigator.share({ title: 'FoodieRusher Tracking', text: text, url: window.location.href });
     } else {
@@ -218,6 +309,11 @@ const StaffProfile = ({ orders, refresh }) => {
                   )}
                 </div>
               </div>
+              {isLive && activeTrackingOrderId === order._id && (
+                <div className="mt-6 h-[280px] w-full rounded-3xl overflow-hidden border border-slate-100 shadow-inner relative z-10">
+                  <div ref={mapContainerRef} className="w-full h-full absolute inset-0" />
+                </div>
+              )}
             </div>
           ))
         )}

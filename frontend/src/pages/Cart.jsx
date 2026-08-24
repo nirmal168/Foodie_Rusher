@@ -21,7 +21,19 @@ const Cart = ({ cart, onAddToCart, onRemoveFromCart, onClearCart }) => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [razorpayStep, setRazorpayStep] = React.useState('idle');
-  const [contactName, setContactName] = React.useState(JSON.parse(localStorage.getItem('user'))?.name || '');
+  
+  const getStoredUser = () => {
+    try {
+      const stored = localStorage.getItem('user');
+      if (stored && stored !== 'undefined') {
+        return JSON.parse(stored);
+      }
+    } catch (e) {}
+    return null;
+  };
+  const storedUser = getStoredUser();
+
+  const [contactName, setContactName] = React.useState(storedUser?.name || '');
   const [contactPhone, setContactPhone] = React.useState('');
   const [extendedAddress, setExtendedAddress] = React.useState('');
 
@@ -40,26 +52,30 @@ const Cart = ({ cart, onAddToCart, onRemoveFromCart, onClearCart }) => {
   const handleRazorpayPayment = async () => {
     setIsProcessing(true);
     setRazorpayStep('processing');
-    const fullAddress = `${selectedArea?.name || ''}, ${selectedDistrict}, Gujarat. ${extendedAddress}`;
+    const fullAddress = `${selectedArea?.name || ''}, ${selectedDistrict}, Gujarat. ${extendedAddress}${contactPhone ? ` (Ph: ${contactPhone})` : ''}`;
     const shopId = cart[0]?.shopId || cart[0]?.shop || null;
     
     setTimeout(async () => {
       try {
+        const userObj = getStoredUser() || {};
+        const customerId = userObj.id || userObj._id;
+        
         const orderData = {
           amount: total,
           items: cart.map(i => ({ name: i.name, price: i.price, quantity: i.quantity })),
           paymentMethod: 'online',
           deliveryAddress: fullAddress,
-          customerId: JSON.parse(localStorage.getItem('user')).id,
+          customerId,
           shopId
         };
-        await axios.post('http://localhost:5001/create-order', orderData);
+        await axios.post('/create-order', orderData);
         setRazorpayStep('success');
         setTimeout(() => {
           onClearCart();
           navigate('/profile');
         }, 2000);
       } catch (err) {
+        console.error("Online payment error details:", err);
         setIsProcessing(false);
         setRazorpayStep('idle');
         toast.error('Payment failed.');
@@ -68,20 +84,24 @@ const Cart = ({ cart, onAddToCart, onRemoveFromCart, onClearCart }) => {
   };
 
   const handleCOD = async () => {
-     const fullAddress = `${selectedArea?.name || ''}, ${selectedDistrict}, Gujarat. ${extendedAddress}`;
+     const fullAddress = `${selectedArea?.name || ''}, ${selectedDistrict}, Gujarat. ${extendedAddress}${contactPhone ? ` (Ph: ${contactPhone})` : ''}`;
      const shopId = cart[0]?.shopId || cart[0]?.shop || null;
      try {
-       await axios.post('http://localhost:5001/cod', {
+       const userObj = getStoredUser() || {};
+       const customerId = userObj.id || userObj._id;
+
+       await axios.post('/cod', {
          amount: total,
          items: cart.map(i => ({ name: i.name, price: i.price, quantity: i.quantity })),
          deliveryAddress: fullAddress,
-         customerId: JSON.parse(localStorage.getItem('user')).id,
+         customerId,
          shopId
        });
        toast.success('Order Placed Successfully!');
        onClearCart();
        navigate('/profile');
      } catch (err) {
+       console.error("COD checkout error details:", err);
        toast.error('Failed to place order.');
      }
   };
@@ -248,7 +268,10 @@ const Cart = ({ cart, onAddToCart, onRemoveFromCart, onClearCart }) => {
                 <h4 className="text-lg font-black mb-6 border-b pb-4">Payment Summary</h4>
                 <div className="space-y-4 mb-6">
                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase"><span>Subtotal</span><span className="text-slate-900">₹{subtotal}</span></div>
-                   <div className="flex justify-between text-sm font-bold text-slate-400 uppercase"><span>Delivery</span><span className="text-green-500">FREE</span></div>
+                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase">
+                      <span>Delivery Charge</span>
+                      <span className="text-slate-900">₹{deliveryFee}</span>
+                    </div>
                    {discount > 0 && <div className="flex justify-between text-sm font-bold text-green-500 uppercase"><span>Discount</span><span>-₹{discount}</span></div>}
                    <div className="flex justify-between text-sm font-bold text-slate-400 uppercase"><span>Platform Fee</span><span className="text-slate-900">₹{platformFee}</span></div>
                    <div className="pt-4 border-t flex justify-between text-xl font-black text-slate-900 uppercase tracking-tighter"><span>Total</span><span className="text-[#E23744]">₹{total}</span></div>

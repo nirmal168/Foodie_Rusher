@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema({
-    items: [{ name: String, price: Number }],
+    items: [{ name: String, price: Number, quantity: { type: Number, default: 1 } }],
     total: Number,
     discount: { type: Number, default: 0 },
     walletDeduction: { type: Number, default: 0 },

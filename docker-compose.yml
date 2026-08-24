@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: foodie_rusher_db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: foodie_rusher_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/food_delivery
+      - JWT_SECRET=foodie_rusher_secret_key_2026
+      - EMAIL=your_email@gmail.com
+      - PASS=your_email_app_password
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:80,http://localhost
+    depends_on:
+      - mongodb
+
+  ai-service:
+    build:
+      context: ./backend/ai_services
+    container_name: foodie_rusher_ai
+    restart: always
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+    command: python ai_services/app.py
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_BASE_URL=http://localhost:5000
+        - VITE_SOCKET_URL=http://localhost:5000
+        - VITE_AI_BASE_URL=http://localhost:5002
+    container_name: foodie_rusher_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - ai-service
+
+volumes:
+  mongo_data:

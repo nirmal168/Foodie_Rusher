@@ -28,7 +28,7 @@ const Profile = () => {
     try {
       setFetching(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5001/api/profile/orders', {
+      const res = await axios.get('/api/profile/orders', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data);

@@ -50,6 +50,7 @@ const TrackingView = () => {
   const mapContainerRef = React.useRef(null);
   const mapRef = React.useRef(null);
   const markerRef = React.useRef(null);
+  const customerMarkerRef = React.useRef(null);
   const pathRef = React.useRef(null);
 
   const params = new URLSearchParams(window.location.search);
@@ -58,7 +59,24 @@ const TrackingView = () => {
   // Ahmedabad Satellite coordinate (Restaurant Default)
   const restaurantCoords = [23.0298, 72.5333];
   // Ahmedabad Vastrapur coordinate (Customer Default)
-  const customerCoords = [23.0350, 72.5293];
+  const [customerCoords, setCustomerCoords] = useState([23.0350, 72.5293]);
+
+  // Request actual customer location using GPS
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCustomerCoords([latitude, longitude]);
+          console.log("Customer GPS coordinates retrieved successfully:", latitude, longitude);
+        },
+        (err) => {
+          console.warn("Using default customer coordinates:", err.message);
+        },
+        { enableHighAccuracy: true }
+      );
+    }
+  }, []);
 
   // Fetch order details to display on panel
   useEffect(() => {
@@ -69,7 +87,7 @@ const TrackingView = () => {
       }
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5001/api/profile/orders', {
+        const res = await axios.get('/api/profile/orders', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const order = res.data.find(o => o._id === orderId);
@@ -133,24 +151,39 @@ const TrackingView = () => {
       });
     };
 
-    // Icons
+    // Restaurant marker (static)
     const restaurantIcon = createCustomIcon('#E23744', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11V9a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v2"/><circle cx="12" cy="16" r="3"/><path d="M9 16v6h6v-6"/></svg>');
-    const customerIcon = createCustomIcon('#3B82F6', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M11.5 9.5 14 12"/><path d="M22 2v3h-3l-9 9"/><path d="M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/></svg>');
-
-    // Add static markers
     L.marker(restaurantCoords, { icon: restaurantIcon }).addTo(map).bindPopup("<b>Kitchen (Restaurant)</b><br>Preparing delicious food.");
-    L.marker(customerCoords, { icon: customerIcon }).addTo(map).bindPopup("<b>Your Delivery Point</b><br>Yummy food heading here.");
 
     mapRef.current = map;
   }, []);
 
-  // Update Live Marker and Polyline
+  // Update Live Marker, Customer Marker, and Polyline
   useEffect(() => {
     if (!mapRef.current) return;
     const L = window.L;
 
     const currentPartnerCoords = location ? [location.lat, location.lng] : restaurantCoords;
 
+    // Helper to build icons dynamically
+    const createCustomIcon = (color, svgPath) => {
+      return L.divIcon({
+        className: 'custom-leaflet-icon',
+        html: `<div style="background-color: ${color}; width: 44px; height: 44px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white;">${svgPath}</div>`,
+        iconSize: [44, 44],
+        iconAnchor: [22, 22]
+      });
+    };
+
+    // Update Customer Marker
+    if (!customerMarkerRef.current) {
+      const customerIcon = createCustomIcon('#3B82F6', '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M11.5 9.5 14 12"/><path d="M22 2v3h-3l-9 9"/><path d="M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/></svg>');
+      customerMarkerRef.current = L.marker(customerCoords, { icon: customerIcon }).addTo(mapRef.current).bindPopup("<b>Your Delivery Point</b><br>Yummy food heading here.");
+    } else {
+      customerMarkerRef.current.setLatLng(customerCoords);
+    }
+
+    // Update Partner/Bike Marker
     if (!markerRef.current) {
       const bikeIcon = L.divIcon({
         className: 'custom-leaflet-icon',
@@ -180,7 +213,7 @@ const TrackingView = () => {
     const bounds = L.latLngBounds([restaurantCoords, currentPartnerCoords, customerCoords]);
     mapRef.current.fitBounds(bounds, { padding: [50, 50] });
 
-  }, [location]);
+  }, [location, customerCoords]);
 
   return (
     <div className="pt-28 pb-16 min-h-[calc(100vh-80px)] bg-slate-50 flex flex-col md:flex-row gap-6 container-max px-4">

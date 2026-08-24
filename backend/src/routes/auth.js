@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
+const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const authenticate = require("../middlewares/auth");
+const authenticate = require("../middleware/auth");
 
 const JWT_SECRET = process.env.JWT_SECRET || "foodie_rusher_secret_key_2026";
 
@@ -15,7 +15,7 @@ const generateStaffCode = () => "STF-" + Math.random().toString(36).substring(2,
 // Register Route
 router.post("/register", async (req, res) => {
     try {
-        const { name, email, password, role, inviteCode } = req.body;
+        const { name, email, password, role, inviteCode, phone } = req.body;
         // Validate required fields
         if (!name || !email || !password || !role) {
             return res.status(400).json({ error: "All fields (name, email, password, role) are required" });
@@ -25,7 +25,15 @@ router.post("/register", async (req, res) => {
         if (existingUser) {
             return res.status(409).json({ error: "Email already registered" });
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Check if phone already exists
+        if (phone) {
+            const cleanPhone = phone.replace(/\s+/g, '');
+            const existingPhone = await User.findOne({ phone: cleanPhone });
+            if (existingPhone) {
+                return res.status(409).json({ error: "Mobile number already registered" });
+            }
+        }
+        const hashedPassword = await bcryptjs.hash(password, 10);
         let employerId = null;
         let myInviteCode = null;
         let myStaffCode = null;
@@ -50,7 +58,8 @@ router.post("/register", async (req, res) => {
             password: hashedPassword,
             role,
             employerId,
-            inviteCode: myInviteCode
+            inviteCode: myInviteCode,
+            phone: phone ? phone.replace(/\s+/g, '') : undefined
         };
         // Include staffRegistrationCode only for staff accounts
         if (myStaffCode) {
@@ -82,8 +91,14 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user || !(await bcrypt.compare(password, user.password))) {
+        const cleanPhone = email ? email.replace(/\s+/g, '') : '';
+        const user = await User.findOne({
+            $or: [
+                { email: email },
+                { phone: cleanPhone }
+            ]
+        });
+        if (!user || !(await bcryptjs.compare(password, user.password))) {
             return res.status(401).json({ error: "Invalid credentials" });
         }
         const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET);
@@ -136,11 +151,17 @@ router.post("/forgot-password", async (req, res) => {
         user.isOtpVerified = false;
         await user.save();
 
-        await sendOtpMail(email, otp);
-        res.json({ message: "OTP sent to your email" });
+        try {
+            await sendOtpMail(email, otp);
+            console.log(`[OTP Verification] Sent OTP ${otp} to ${email}`);
+            res.json({ message: "OTP sent to your email" });
+        } catch (err) {
+            console.error("[OTP Verification] Failed to send SMTP email:", err);
+            return res.status(500).json({ error: "Failed to send reset OTP email. Please ensure your SMTP email credentials (EMAIL and PASS) in backend/.env are correct." });
+        }
     } catch (err) {
         console.error("Forgot password error:", err);
-        res.status(500).json({ error: "Failed to send OTP email" });
+        res.status(500).json({ error: "Failed to process forgot password request" });
     }
 });
 
@@ -180,7 +201,7 @@ router.post("/reset-password", async (req, res) => {
             return res.status(400).json({ error: "OTP has not been verified" });
         }
 
-        user.password = await bcrypt.hash(newPassword, 10);
+        user.password = await bcryptjs.hash(newPassword, 10);
         user.resetOtp = undefined;
         user.otpExpires = undefined;
         user.isOtpVerified = false;
@@ -190,6 +211,115 @@ router.post("/reset-password", async (req, res) => {
     } catch (err) {
         console.error("Reset password error:", err);
         res.status(500).json({ error: "Server error during password reset" });
+    }
+});
+
+// OTP Send Endpoint
+router.post("/otp/send", async (req, res) => {
+    try {
+        const { type, identifier, role } = req.body;
+        if (!type || !identifier) {
+            return res.status(400).json({ error: "Type and identifier are required" });
+        }
+
+        let user = null;
+        if (type === 'email') {
+            user = await User.findOne({ email: identifier });
+            if (!user) {
+                // Sign Up placeholder
+                const defaultName = identifier.split('@')[0];
+                const hashedPassword = await bcryptjs.hash(Math.random().toString(36), 10);
+                user = await User.create({
+                    name: defaultName,
+                    email: identifier,
+                    password: hashedPassword,
+                    role: role || 'customer'
+                });
+            }
+        } else if (type === 'phone') {
+            const cleanPhone = identifier.replace(/\s+/g, '');
+            user = await User.findOne({ phone: cleanPhone });
+            if (!user) {
+                // Sign Up placeholder
+                const defaultName = `User_${cleanPhone.slice(-4)}`;
+                const mockEmail = `phone_${cleanPhone}@foodierusher.local`;
+                const hashedPassword = await bcryptjs.hash(Math.random().toString(36), 10);
+                user = await User.create({
+                    name: defaultName,
+                    email: mockEmail,
+                    password: hashedPassword,
+                    phone: cleanPhone,
+                    role: role || 'customer'
+                });
+            }
+        } else {
+            return res.status(400).json({ error: "Invalid OTP type" });
+        }
+
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.resetOtp = otp;
+        user.otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+        user.isOtpVerified = false;
+        await user.save();
+
+        console.log(`[OTP Login/Signup] Sent ${type} OTP: ${otp} to ${identifier}`);
+        
+        if (type === 'email') {
+            try {
+                await sendOtpMail(identifier, otp);
+            } catch (err) {
+                console.error("[OTP Send SMTP Error]:", err);
+                return res.status(500).json({ error: "Failed to send OTP email. Please verify that your SMTP email settings (EMAIL and PASS) in backend/.env are configured correctly." });
+            }
+        } else if (type === 'phone') {
+            // In a production environment, you would integrate Twilio or a similar SMS gateway here:
+            console.log(`[SMS Gateway Mock] Sending SMS to ${identifier}: Your OTP is ${otp}`);
+        }
+
+        res.json({ 
+            message: "OTP sent successfully"
+        });
+    } catch (err) {
+        console.error("OTP send error:", err);
+        res.status(500).json({ error: err.message || "Failed to send OTP" });
+    }
+});
+
+// OTP Verify and Login/Signup Endpoint
+router.post("/otp/verify", async (req, res) => {
+    try {
+        const { type, identifier, otp } = req.body;
+        if (!type || !identifier || !otp) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        let user = null;
+        if (type === 'email') {
+            user = await User.findOne({ email: identifier });
+        } else if (type === 'phone') {
+            const cleanPhone = identifier.replace(/\s+/g, '');
+            user = await User.findOne({ phone: cleanPhone });
+        }
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        if (user.resetOtp !== otp || new Date() > user.otpExpires) {
+            return res.status(400).json({ error: "Invalid or expired OTP" });
+        }
+
+        user.resetOtp = undefined;
+        user.otpExpires = undefined;
+        user.isOtpVerified = true;
+        await user.save();
+
+        const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET);
+        res.json({ token, user: { id: user._id, name: user.name, role: user.role } });
+    } catch (err) {
+        console.error("OTP verify error:", err);
+        res.status(500).json({ error: "Failed to verify OTP" });
     }
 });
 

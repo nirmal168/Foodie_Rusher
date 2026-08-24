@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Key, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Key, ArrowRight, ArrowLeft, CheckCircle, Phone, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -14,11 +14,16 @@ const ForgetPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleQuickForgot = (selectedEmail) => {
+    setEmail(selectedEmail);
+    toast.success(`Selected test account: ${selectedEmail}`);
+  };
+
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:5001/forgot-password', { email });
+      const res = await axios.post('/forgot-password', { email });
       toast.success('OTP sent to your email!');
       setStep(2);
     } catch (error) {
@@ -32,7 +37,7 @@ const ForgetPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:5001/verify-otp', { email, otp });
+      await axios.post('/verify-otp', { email, otp });
       toast.success('OTP verified! You can now reset your password.');
       setStep(3);
     } catch (error) {
@@ -50,7 +55,7 @@ const ForgetPassword = () => {
     }
     setLoading(true);
     try {
-      await axios.post('http://localhost:5001/reset-password', { email, newPassword });
+      await axios.post('/reset-password', { email, newPassword });
       toast.success('Password reset successfully! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
@@ -116,6 +121,38 @@ const ForgetPassword = () => {
                 {loading ? 'Sending OTP...' : 'Send Reset OTP'}
                 <ArrowRight size={16} />
               </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
+                <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-black tracking-widest text-[9px]">Select Test Account</span></div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                 <button 
+                   type="button" 
+                   onClick={() => handleQuickForgot('customer@test.com')}
+                   className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-red-50 hover:border-red-100 transition-all shadow-sm gap-1 group"
+                 >
+                   <Mail size={18} className="text-red-500 group-hover:scale-110 transition-transform"/>
+                   <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-red-500 transition-colors">Customer</span>
+                 </button>
+                 <button 
+                   type="button" 
+                   onClick={() => handleQuickForgot('staff@test.com')}
+                   className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-100 transition-all shadow-sm gap-1 group"
+                 >
+                   <Phone size={18} className="text-green-500 group-hover:scale-110 transition-transform"/>
+                   <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-green-500 transition-colors">Staff</span>
+                 </button>
+                 <button 
+                   type="button" 
+                   onClick={() => handleQuickForgot('owner@test.com')}
+                   className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-amber-50 hover:border-amber-100 transition-all shadow-sm gap-1 group"
+                 >
+                   <Globe size={18} className="text-blue-400 group-hover:scale-110 transition-transform"/>
+                   <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-amber-500 transition-colors">Owner</span>
+                 </button>
+              </div>
             </motion.form>
           )}
 

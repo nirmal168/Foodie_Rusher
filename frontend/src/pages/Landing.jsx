@@ -44,7 +44,7 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
       try {
         setLoading(true);
         const areaParam = selectedArea?.name ? `&area=${selectedArea.name}` : '';
-        const res = await axios.get(`http://localhost:5001/api/shop/get-by-location?district=${selectedDistrict}${areaParam}`);
+        const res = await axios.get(`/api/shop/get-by-location?district=${selectedDistrict}${areaParam}`);
         setShops(res.data);
       } catch (err) {
         console.error("Error fetching shops by location:", err);

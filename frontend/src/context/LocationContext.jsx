@@ -13,7 +13,7 @@ export const LocationProvider = ({ children }) => {
   useEffect(() => {
     const fetchDistricts = async () => {
       try {
-        const res = await axios.get('http://localhost:5001/api/locations');
+        const res = await axios.get('/api/locations');
         setDistricts(res.data);
         setLoading(false);
       } catch (err) {
@@ -28,7 +28,7 @@ export const LocationProvider = ({ children }) => {
     const fetchAreas = async () => {
       if (!selectedDistrict) return;
       try {
-        const res = await axios.get(`http://localhost:5001/api/locations/${selectedDistrict}/areas`);
+        const res = await axios.get(`/api/locations/${selectedDistrict}/areas`);
         setAreas(res.data);
         if (res.data.length > 0) setSelectedArea(res.data[0]);
       } catch (err) {

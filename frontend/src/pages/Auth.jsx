@@ -1,17 +1,24 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, Eye, EyeOff, LogIn, Globe, Shield, ChefHat, Bike, Phone } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Eye, EyeOff, LogIn, Globe, Shield, ChefHat, Bike, Phone, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import axios from 'axios';
 
 const Auth = ({ defaultIsLogin = true }) => {
   const [isLogin, setIsLogin] = useState(defaultIsLogin);
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('customer');
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', inviteCode: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', inviteCode: '', phone: '' });
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, loginWithToken } = useAuth();
+
+  const [otpMode, setOtpMode] = useState(null); // null, 'email', or 'phone'
+  const [otpIdentifier, setOtpIdentifier] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +32,7 @@ const Auth = ({ defaultIsLogin = true }) => {
         toast.success(`Welcome back! Logged in as ${role}.`);
         navigate('/');
       } else {
-        await register(formData.name, formData.email, formData.password, role, formData.inviteCode);
+        await register(formData.name, formData.email, formData.password, role, formData.inviteCode, formData.phone);
         toast.success(`Welcome! Your ${role} account has been created.`);
         navigate('/');
       }
@@ -36,6 +43,98 @@ const Auth = ({ defaultIsLogin = true }) => {
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleQuickLogin = async (email, password, targetRole) => {
+    try {
+      if (isLogin) {
+        setIsLogin(true);
+        setRole(targetRole);
+        setFormData({
+          name: '',
+          email: email,
+          password: password,
+          inviteCode: ''
+        });
+        const loginToastId = toast.loading('Logging in...');
+        const user = await login(email, password, targetRole);
+        if (user.role !== targetRole) {
+          toast.error(`This account is not a ${targetRole} account. Please select the correct role.`, { id: loginToastId });
+          return;
+        }
+        toast.success(`Welcome back! Logged in as ${targetRole}.`, { id: loginToastId });
+        navigate('/');
+      } else {
+        // Register Mode Autofill
+        if (targetRole === 'owner') {
+          toast.success("Owner already exists! Switching to Login Mode...");
+          setIsLogin(true);
+          setRole('owner');
+          setFormData({
+            name: '',
+            email: 'owner@test.com',
+            password: 'password123',
+            inviteCode: ''
+          });
+          return;
+        }
+        
+        const testName = targetRole === 'customer' ? 'Test Customer' : 'Test Staff';
+        const testEmail = targetRole === 'customer' 
+          ? `cust_${Math.floor(1000 + Math.random() * 9000)}@test.com` 
+          : `stf_${Math.floor(1000 + Math.random() * 9000)}@test.com`;
+        
+        setRole(targetRole);
+        setFormData({
+          name: testName,
+          email: testEmail,
+          password: 'password123',
+          inviteCode: targetRole === 'staff' ? '701674' : ''
+        });
+        toast.success(`Filled ${targetRole} sign-up form with test credentials!`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Authentication failed');
+    }
+  };
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    if (!otpIdentifier.trim()) return;
+    setOtpLoading(true);
+    try {
+      const res = await axios.post('/otp/send', {
+        type: otpMode,
+        identifier: otpIdentifier,
+        role: role
+      });
+      toast.success('OTP sent successfully!');
+      setOtpSent(true);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to send OTP');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!otpCode.trim()) return;
+    setOtpLoading(true);
+    try {
+      const res = await axios.post('/otp/verify', {
+        type: otpMode,
+        identifier: otpIdentifier,
+        otp: otpCode
+      });
+      toast.success('Authenticated successfully!');
+      loginWithToken(res.data.token, res.data.user);
+      navigate('/');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Invalid OTP code');
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   const roles = [
@@ -54,6 +153,105 @@ const Auth = ({ defaultIsLogin = true }) => {
 
   const theme = getTheme();
 
+  const renderOtpForm = () => {
+    return (
+      <div className="space-y-4">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">
+            Sign In with {otpMode === 'email' ? 'Email OTP' : 'Mobile OTP'}
+          </h2>
+          <p className="text-slate-400 font-medium text-xs mt-1">
+            Logging in as <span className="font-bold text-slate-600 uppercase">{role}</span>
+          </p>
+        </div>
+
+        {!otpSent ? (
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                {otpMode === 'email' ? 'Email Address' : 'Mobile Number'}
+              </label>
+              <div className="relative">
+                {otpMode === 'email' ? (
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                ) : (
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                )}
+                <input
+                  type={otpMode === 'email' ? 'email' : 'tel'}
+                  value={otpIdentifier}
+                  onChange={(e) => setOtpIdentifier(e.target.value)}
+                  placeholder={otpMode === 'email' ? 'Enter your email' : 'Enter your mobile number'}
+                  required
+                  className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-medium text-slate-900 text-sm`}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={otpLoading}
+              className={`w-full bg-slate-900 text-white py-4 rounded-xl font-black text-[12px] uppercase tracking-widest ${theme.hoverBg} transition-colors shadow-xl shadow-slate-200 mt-6 flex items-center justify-center gap-2`}
+            >
+              {otpLoading ? 'Sending...' : 'Send OTP Code'}
+              <ArrowRight size={16} />
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                Enter 6-Digit OTP
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  placeholder="Enter OTP code"
+                  required
+                  className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-bold text-center text-lg tracking-[0.2em]`}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={otpLoading}
+              className={`w-full bg-green-500 text-white py-4 rounded-xl font-black text-[12px] uppercase tracking-widest hover:bg-green-600 transition-colors shadow-xl shadow-green-100 mt-6 flex items-center justify-center gap-2`}
+            >
+              {otpLoading ? 'Verifying...' : 'Verify & Sign In'}
+              <CheckCircle size={16} />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOtpSent(false)}
+              className="w-full text-slate-400 hover:text-slate-600 text-center font-bold text-[10px] uppercase tracking-widest mt-2"
+            >
+              Change {otpMode === 'email' ? 'Email' : 'Number'}
+            </button>
+          </form>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setOtpMode(null);
+            setOtpSent(false);
+            setOtpIdentifier('');
+            setOtpCode('');
+          }}
+          className="w-full text-center text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-800 transition-colors mt-4 block"
+        >
+          ← Back to Password Login
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-16 bg-white flex items-center justify-center px-4 relative overflow-hidden transition-colors duration-500">
       <motion.div
@@ -62,7 +260,11 @@ const Auth = ({ defaultIsLogin = true }) => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white rounded-3xl shadow-zomato p-8 relative z-10 border border-slate-100"
       >
-        <div className="text-center mb-8">
+        {otpMode ? (
+          renderOtpForm()
+        ) : (
+          <>
+            <div className="text-center mb-8">
           <h1 className="text-3xl font-black text-slate-900 mb-2">
             {isLogin ? 'Welcome back' : 'Create an account'}
           </h1>
@@ -139,6 +341,7 @@ const Auth = ({ defaultIsLogin = true }) => {
                   <input
                     name="name"
                     type="text"
+                    value={formData.name || ''}
                     onChange={handleInputChange}
                     placeholder="Enter your name"
                     required
@@ -149,20 +352,55 @@ const Auth = ({ defaultIsLogin = true }) => {
             )}
           </AnimatePresence>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <input
-                name="email"
-                type="email"
-                onChange={handleInputChange}
-                placeholder="Enter your email"
-                required
-                className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-medium text-slate-900 text-sm placeholder:text-slate-300`}
-              />
+          {isLogin ? (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address or Mobile Number</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  name="email"
+                  type="text"
+                  value={formData.email || ''}
+                  onChange={handleInputChange}
+                  placeholder="Enter your email or mobile number"
+                  required
+                  className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-medium text-slate-900 text-sm placeholder:text-slate-300`}
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    name="email"
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email address"
+                    required
+                    className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-medium text-slate-900 text-sm placeholder:text-slate-300`}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Mobile Number (Optional)</label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    name="phone"
+                    type="tel"
+                    value={formData.phone || ''}
+                    onChange={handleInputChange}
+                    placeholder="Enter your mobile number"
+                    className={`w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-1 ${theme.ring} ${theme.border} transition-colors font-medium text-slate-900 text-sm placeholder:text-slate-300`}
+                  />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="space-y-1.5">
             <div className="flex justify-between items-center px-1">
@@ -182,6 +420,7 @@ const Auth = ({ defaultIsLogin = true }) => {
               <input
                 name="password"
                 type={showPassword ? 'text' : 'password'}
+                value={formData.password || ''}
                 onChange={handleInputChange}
                 placeholder="Enter your password"
                 required
@@ -211,6 +450,7 @@ const Auth = ({ defaultIsLogin = true }) => {
                   <input
                     name="inviteCode"
                     type="text"
+                    value={formData.inviteCode || ''}
                     onChange={handleInputChange}
                     placeholder="Enter 6-digit code (e.g. 701674)"
                     required
@@ -232,13 +472,37 @@ const Auth = ({ defaultIsLogin = true }) => {
 
         <div className="relative my-8">
           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-bold tracking-widest">Or continue with</span></div>
+          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400 font-black tracking-widest text-[10px]">Or passwordless OTP</span></div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-8">
-           <button type="button" className="flex items-center justify-center py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-all shadow-sm"><Mail size={20} className="text-red-500"/></button>
-           <button type="button" className="flex items-center justify-center py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-all shadow-sm"><Phone size={20} className="text-green-500"/></button>
-           <button type="button" className="flex items-center justify-center py-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-all shadow-sm"><Globe size={20} className="text-blue-400"/></button>
+           <button 
+             type="button" 
+             onClick={() => setOtpMode('email')}
+             className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-red-50 hover:border-red-100 transition-all shadow-sm gap-1 group"
+             title="Sign In with Email OTP"
+           >
+             <Mail size={18} className="text-red-500 group-hover:scale-110 transition-transform"/>
+             <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-red-500 transition-colors">Email OTP</span>
+           </button>
+           <button 
+             type="button" 
+             onClick={() => setOtpMode('phone')}
+             className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-green-50 hover:border-green-100 transition-all shadow-sm gap-1 group"
+             title="Sign In with Mobile OTP"
+           >
+             <Phone size={18} className="text-green-500 group-hover:scale-110 transition-transform"/>
+             <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-green-500 transition-colors">Mobile OTP</span>
+           </button>
+           <button 
+             type="button" 
+             onClick={() => handleQuickLogin('customer@test.com', 'password123', 'customer')}
+             className="flex flex-col items-center justify-center py-2.5 border border-slate-100 rounded-2xl hover:bg-amber-50 hover:border-amber-100 transition-all shadow-sm gap-1 group"
+             title="Quick Demo Login"
+           >
+             <Globe size={18} className="text-blue-400 group-hover:scale-110 transition-transform"/>
+             <span className="text-[9px] font-black uppercase tracking-tight text-slate-400 group-hover:text-amber-500 transition-colors">Demo Login</span>
+           </button>
         </div>
 
         <div className="mt-8 text-center text-sm font-medium text-slate-400">
@@ -250,7 +514,9 @@ const Auth = ({ defaultIsLogin = true }) => {
             {isLogin ? 'Join now' : 'Sign in here'}
           </button>
         </div>
-      </motion.div>
+      </>
+    )}
+  </motion.div>
     </div>
   );
 };

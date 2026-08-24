@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, ShoppingCart, Search, MapPin, Menu as MenuIcon, X, Check } from 'lucide-react';
+import { Bell, ShoppingCart, Search, MapPin, Menu as MenuIcon, X, Check, ShoppingBag, Home } from 'lucide-react';
 import { Link, useLocation as useRouteLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -29,7 +29,7 @@ const Navbar = ({ cartCount }) => {
     if (user) {
       const fetchNotifications = async () => {
         try {
-          const res = await axios.get('http://localhost:5001/api/notifications', {
+          const res = await axios.get('/api/notifications', {
             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
           });
           setNotifications(res.data);
@@ -50,7 +50,7 @@ const Navbar = ({ cartCount }) => {
 
   const markAsRead = async () => {
     try {
-      await axios.post('http://localhost:5001/api/notifications/read', {}, {
+      await axios.post('/api/notifications/read', {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -94,6 +94,18 @@ const Navbar = ({ cartCount }) => {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-8 shrink-0">
+            <Link to="/" className="flex items-center gap-2 text-slate-600 hover:text-[#E23744] font-black text-[10px] uppercase tracking-widest transition-all">
+              <Home size={18} />
+              <span>Home</span>
+            </Link>
+
+            {user && user.role === 'customer' && (
+              <Link to="/profile" className="flex items-center gap-2 text-slate-600 hover:text-[#E23744] font-black text-[10px] uppercase tracking-widest transition-all">
+                <ShoppingBag size={18} />
+                <span>My Orders</span>
+              </Link>
+            )}
+
             {user ? (
                <div className="flex items-center gap-6">
                   {/* Notifications */}
@@ -184,13 +196,18 @@ const Navbar = ({ cartCount }) => {
                 <span className="font-bold text-slate-800 uppercase text-xs tracking-widest">{selectedDistrict}, Gujarat</span>
               </div>
               <hr />
-              {user ? (
+               {user ? (
                 <>
+                  <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl font-black uppercase text-slate-900">Home</Link>
+                  {user.role === 'customer' && (
+                    <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl font-black uppercase text-slate-900">My Orders</Link>
+                  )}
                   <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl font-black uppercase text-slate-900">Dashboard</Link>
                   <button onClick={() => { logout(); setIsMobileMenuOpen(false); navigate('/'); }} className="block text-xl font-black uppercase text-[#E23744]">Logout</button>
                 </>
               ) : (
                 <>
+                  <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl font-black uppercase text-slate-900">Home</Link>
                   <Link to="/login" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl font-black uppercase text-slate-900">Log In</Link>
                   <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)} className="block text-xl font-black uppercase text-slate-900">Sign Up</Link>
                 </>

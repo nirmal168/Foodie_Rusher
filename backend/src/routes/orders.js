@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
@@ -240,14 +241,17 @@ router.post("/create-order", async (req, res) => {
     const { amount, items, paymentMethod, customerId, deliveryAddress, shopId } = req.body;
 
     try {
+        const cleanShopId = mongoose.Types.ObjectId.isValid(shopId) ? shopId : null;
+        const cleanCustomerId = mongoose.Types.ObjectId.isValid(customerId) ? customerId : null;
+
         const newOrder = await Order.create({
             items,
             total: amount,
             paymentMethod,
             paymentStatus: "success", // Mocked success
             deliveryAddress: deliveryAddress || "123 Gourmet Street, Dummy Location",
-            customerId,
-            shopId: shopId || null,
+            customerId: cleanCustomerId,
+            shopId: cleanShopId,
             razorpayOrderId: "mock_order_id_" + Date.now()
         });
 
@@ -255,7 +259,9 @@ router.post("/create-order", async (req, res) => {
         res.json({ id: newOrder.razorpayOrderId, status: "created", amount: amount * 100 });
         
         // Trigger AI geo-spatial assignment in background
-        autoAssignOrder(newOrder._id, customerId);
+        if (cleanCustomerId) {
+            autoAssignOrder(newOrder._id, cleanCustomerId);
+        }
     } catch (err) {
         console.error("Order creation failed:", err);
         res.status(500).json({ error: "Order creation failed" });
@@ -266,6 +272,8 @@ router.post("/create-order", async (req, res) => {
 router.post("/cod", async (req, res) => {
     try {
         const { amount, items, customerId, deliveryAddress, shopId } = req.body;
+        const cleanShopId = mongoose.Types.ObjectId.isValid(shopId) ? shopId : null;
+        const cleanCustomerId = mongoose.Types.ObjectId.isValid(customerId) ? customerId : null;
 
         const newOrder = await Order.create({
             items,
@@ -273,14 +281,16 @@ router.post("/cod", async (req, res) => {
             paymentMethod: "COD",
             paymentStatus: "success",
             deliveryAddress: deliveryAddress || "123 Gourmet Street, Dummy Location",
-            customerId,
-            shopId: shopId || null
+            customerId: cleanCustomerId,
+            shopId: cleanShopId
         });
 
         res.send({ message: "Order Placed (Cash on Delivery)" });
         
         // Trigger AI geo-spatial assignment in background
-        autoAssignOrder(newOrder._id, customerId);
+        if (cleanCustomerId) {
+            autoAssignOrder(newOrder._id, cleanCustomerId);
+        }
     } catch (err) {
         console.error("COD Checkout error:", err);
         res.status(500).json({ error: "COD Checkout failed" });
