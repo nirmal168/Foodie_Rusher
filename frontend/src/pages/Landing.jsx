@@ -147,24 +147,28 @@ const Landing = ({ onAddToCart, onRemoveFromCart, cart }) => {
             </div>
           </div>
           <div className="flex flex-wrap gap-4 w-full md:w-auto">
-            <div className="flex-1 md:flex-initial">
+            <div className="flex-1 md:flex-initial min-w-[160px]">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">District</label>
               <select 
                 value={selectedDistrict} 
                 onChange={(e) => setSelectedDistrict(e.target.value)} 
-                className="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-xs font-black uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-[#E23744]"
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#E23744]/20 focus:border-[#E23744] cursor-pointer shadow-sm"
               >
                 {districts.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
-            <div className="flex-1 md:flex-initial">
+            <div className="flex-1 md:flex-initial min-w-[180px]">
               <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1.5 block ml-1">Area</label>
               <select 
                 value={selectedArea?.name || ''} 
                 onChange={(e) => setSelectedArea(areas.find(a => a.name === e.target.value))} 
-                className="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-xs font-black uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-[#E23744]"
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-wider text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#E23744]/20 focus:border-[#E23744] cursor-pointer shadow-sm"
               >
-                {areas.map(a => <option key={a.name} value={a.name}>{a.name} ({a.pincode})</option>)}
+                {areas.length > 0 ? (
+                  areas.map(a => <option key={a.name} value={a.name}>{a.name} ({a.pincode})</option>)
+                ) : (
+                  <option value="">All Areas</option>
+                )}
               </select>
             </div>
           </div>
