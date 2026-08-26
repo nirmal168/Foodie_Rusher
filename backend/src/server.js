@@ -89,5 +89,5 @@ app.get('*', (req, res) => {
   }
 });
 
-// Start server on 0.0.0.0
-server.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} on 0.0.0.0 with Real-time Support`));
+// Start server on PORT
+server.listen(PORT, () => console.log(`Server running on port ${PORT} with Real-time Support`));

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: foodie-rusher
+    env: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: node backend/src/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: foodie_rusher_secret_key_2026
