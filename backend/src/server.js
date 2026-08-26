@@ -57,11 +57,15 @@ mongoose.connection.once('open', async () => {
             console.error('Error dropping index:', err.message);
         }
     }
-});
+const fs = require('fs');
 const PORT = process.env.PORT || 5000;
 
+const distPath = fs.existsSync(path.join(__dirname, '../../frontend/dist'))
+  ? path.join(__dirname, '../../frontend/dist')
+  : path.join(process.cwd(), 'frontend/dist');
+
 // Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+app.use(express.static(distPath));
 
 // Mounting Routes
 app.use("/", authRouter); // handles login, register, me
@@ -76,9 +80,14 @@ app.use("/api/shop", shopRouter);
 app.use("/api/item", itemsRouter);
 
 // Wildcard route to serve React index.html for client-side routing
-app.get('*any', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+app.get('*', (req, res) => {
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(200).send('Foodie Rusher Backend API Running');
+  }
 });
 
-// Start server after routes and index handling
-server.listen(PORT, () => console.log(`Server running on port ${PORT} with Real-time Support`));
+// Start server on 0.0.0.0
+server.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT} on 0.0.0.0 with Real-time Support`));
