@@ -90,12 +90,29 @@ router.get('/api/staff', authenticate, async (req, res) => {
         const owner = await User.findById(req.user.userId);
         const ownerInviteCode = owner?.inviteCode || '701674';
 
-        // Retrieve all staff members in the platform
+        // Retrieve all staff members or users linked via invite code
         let staffList = await User.find({ 
-            $or: [{ role: 'staff' }, { role: 'delivery' }] 
-        }, 'name email phone staffRegistrationCode inviteCode employerId');
+            $or: [
+                { role: 'staff' }, 
+                { role: 'delivery' },
+                { inviteCode: ownerInviteCode },
+                { employerId: req.user.userId }
+            ]
+        }, 'name email phone staffRegistrationCode inviteCode employerId role');
 
-        // If no staff account exists in MongoDB, automatically seed test staff
+        // Automatically assign staffRegistrationCode if missing
+        for (let s of staffList) {
+            if (!s.staffRegistrationCode) {
+                s.staffRegistrationCode = "STF-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+                try { await s.save(); } catch (e) {}
+            }
+            if (s.role !== 'staff') {
+                s.role = 'staff';
+                try { await s.save(); } catch (e) {}
+            }
+        }
+
+        // If no staff exists at all in DB, return seeded test staff
         if (staffList.length === 0) {
             const bcryptjs = require("bcryptjs");
             let testStaff = await User.findOne({ email: 'staff@test.com' });

@@ -256,8 +256,9 @@ const OwnerProfile = ({ orders, refresh }) => {
     setItemModalOpen(true);
   };
 
+  const totalRev = orders.reduce((acc, o) => acc + (Number(o?.total || o?.amount) || 0), 0);
   const stats = [
-    { label: 'Total Revenue', value: `₹${orders.reduce((acc, o) => acc + o.total, 0)}`, icon: <TrendingUp size={20} />, color: 'bg-green-100 text-green-600' },
+    { label: 'Total Revenue', value: `₹${totalRev}`, icon: <TrendingUp size={20} />, color: 'bg-green-100 text-green-600' },
     { label: 'My Fleet', value: staffList.length, icon: <Users size={20} />, color: 'bg-indigo-100 text-indigo-600' },
     { label: 'Active Orders', value: orders.filter(o => o.status !== 'delivered').length, icon: <Package size={20} />, color: 'bg-amber-100 text-amber-600' },
   ];
