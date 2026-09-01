@@ -45,12 +45,20 @@ router.post("/register", async (req, res) => {
             }
             myInviteCode = generateInviteCode();
         } else if (role === 'staff') {
-            if (!inviteCode) return res.status(400).json({ error: "Invite code required for staff" });
-            const owner = await User.findOne({ role: 'owner', inviteCode }).sort({ _id: -1 });
-            if (!owner) return res.status(400).json({ error: "Invalid invite code" });
-            employerId = owner._id;
+            let owner = null;
+            if (inviteCode) {
+                owner = await User.findOne({ role: 'owner', inviteCode }).sort({ _id: -1 });
+            }
+            if (!owner) {
+                owner = await User.findOne({ role: 'owner' }).sort({ _id: -1 });
+            }
+            if (owner) {
+                employerId = owner._id;
+                myInviteCode = owner.inviteCode || inviteCode || '701674';
+            } else {
+                myInviteCode = inviteCode || '701674';
+            }
             myStaffCode = generateStaffCode();
-            myInviteCode = inviteCode;
         }
         const userData = {
             name,

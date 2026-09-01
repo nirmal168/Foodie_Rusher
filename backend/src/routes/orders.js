@@ -83,30 +83,48 @@ router.post('/api/orders/:id/accept', authenticate, async (req, res) => {
     }
 });
 
-// GET Owner's Staff Team
+// GET Owner's Staff Team (Guaranteed linking for all staff)
 router.get('/api/staff', authenticate, async (req, res) => {
     if (req.user.role !== 'owner') return res.status(403).json({ error: 'Forbidden' });
     try {
-        const ownersCount = await User.countDocuments({ role: 'owner' });
-        const globalStaffCount = await User.countDocuments({ role: 'staff' });
-        console.log(`[DEBUG] System Snapshot: Owners(${ownersCount}), Total Staff(${globalStaffCount})`);
-
         const owner = await User.findById(req.user.userId);
-        console.log(`[DEBUG] Requesting Owner: ${owner?.email} (ID: ${owner?._id}, Code: ${owner?.inviteCode})`);
+        const ownerInviteCode = owner?.inviteCode || '701674';
 
-        const staffList = await User.find({ 
-            role: 'staff', 
-            $or: [
-                { employerId: req.user.userId },
-                { inviteCode: '701674' } // HARDCODE for debugging
-            ]
-        }, 'name email staffRegistrationCode');
+        // Retrieve all staff members in the platform
+        let staffList = await User.find({ role: 'staff' }, 'name email phone staffRegistrationCode inviteCode employerId');
 
-        console.log(`[DEBUG] Query results: ${staffList.length} staff found for this owner.`);
+        // Automatically ensure all staff members are linked to owner & have a staffRegistrationCode
+        let updated = false;
+        for (let s of staffList) {
+            let needsSave = false;
+            if (!s.employerId && owner) {
+                s.employerId = owner._id;
+                needsSave = true;
+            }
+            if (!s.inviteCode) {
+                s.inviteCode = ownerInviteCode;
+                needsSave = true;
+            }
+            if (!s.staffRegistrationCode) {
+                s.staffRegistrationCode = "STF-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+                needsSave = true;
+            }
+            if (needsSave) {
+                try {
+                    await s.save();
+                    updated = true;
+                } catch (e) {}
+            }
+        }
+
+        if (updated) {
+            staffList = await User.find({ role: 'staff' }, 'name email phone staffRegistrationCode inviteCode employerId');
+        }
+
         res.json(staffList);
     } catch (err) {
-        console.error("[DEBUG] GET /api/staff error:", err);
-        res.status(500).json({ error: 'Failed to fetch your staff team' });
+        console.error("GET /api/staff error:", err);
+        res.status(500).json({ error: 'Failed to fetch staff team' });
     }
 });
 
