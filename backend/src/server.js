@@ -57,6 +57,8 @@ mongoose.connection.once('open', async () => {
             console.error('Error dropping index:', err.message);
         }
     }
+});
+
 const fs = require('fs');
 const PORT = process.env.PORT || 5000;
 
@@ -79,8 +81,8 @@ app.use("/api/notifications", notificationsRouter);
 app.use("/api/shop", shopRouter);
 app.use("/api/item", itemsRouter);
 
-// Wildcard route to serve React index.html for client-side routing
-app.get('*', (req, res) => {
+// Fallback route to serve React index.html for client-side routing in Express 5
+app.use((req, res) => {
   const indexPath = path.join(distPath, 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
