@@ -15,10 +15,17 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
+
+      // Hydrate instantly from cached user state for 0-second page load
+      if (cachedUserStr) {
+        try {
+          setUser(JSON.parse(cachedUserStr));
+        } catch (e) {}
+      }
       
       try {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const res = await axios.get('/me');
+        const res = await axios.get('/me', { timeout: 3500 });
         const user = res.data;
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
@@ -37,8 +44,9 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('user');
           delete axios.defaults.headers.common['Authorization'];
         }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     initAuth();
   }, []);
