@@ -179,6 +179,52 @@ router.post('/api/owner/staff/hire/:id', authenticate, async (req, res) => {
     }
 });
 
+// CREATE & ADD a new staff member directly from Owner account
+router.post('/api/owner/staff/add', authenticate, async (req, res) => {
+    if (req.user.role !== 'owner') return res.status(403).json({ error: 'Forbidden. Owners only.' });
+    try {
+        const { name, email, phone, password } = req.body;
+        if (!name || !email) {
+            return res.status(400).json({ error: 'Staff Name and Email are required' });
+        }
+        
+        const owner = await User.findById(req.user.userId);
+        const inviteCode = owner?.inviteCode || '701674';
+        const bcryptjs = require("bcryptjs");
+        const cleanPhone = phone ? phone.replace(/\s+/g, '') : undefined;
+        
+        // Check if user already exists
+        let existingStaff = await User.findOne({ email });
+        if (existingStaff) {
+            existingStaff.role = 'staff';
+            existingStaff.employerId = req.user.userId;
+            existingStaff.inviteCode = inviteCode;
+            if (!existingStaff.staffRegistrationCode) {
+                existingStaff.staffRegistrationCode = "STF-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+            }
+            await existingStaff.save();
+            return res.json({ message: "Existing user linked as delivery partner!", staff: existingStaff });
+        }
+
+        const hashedPassword = await bcryptjs.hash(password || 'password123', 10);
+        const newStaff = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            phone: cleanPhone,
+            role: 'staff',
+            employerId: req.user.userId,
+            inviteCode: inviteCode,
+            staffRegistrationCode: "STF-" + Math.random().toString(36).substring(2, 6).toUpperCase()
+        });
+
+        res.status(201).json({ message: "Staff member added successfully!", staff: newStaff });
+    } catch (err) {
+        console.error("Add staff error:", err);
+        res.status(500).json({ error: err.message || "Failed to add staff member" });
+    }
+});
+
 // ASSIGN a specific staff to an order (Owner only)
 router.post('/api/orders/:id/assign', authenticate, async (req, res) => {
     if (req.user.role !== 'owner') return res.status(403).json({ error: 'Forbidden' });

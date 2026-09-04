@@ -43,6 +43,35 @@ const OwnerProfile = ({ orders, refresh }) => {
     imageFile: null
   });
 
+  const [addStaffForm, setAddStaffForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "password123"
+  });
+  const [addStaffLoading, setAddStaffLoading] = useState(false);
+
+  const handleAddStaffSubmit = async (e) => {
+    e.preventDefault();
+    if (!addStaffForm.name || !addStaffForm.email) {
+      return toast.error("Staff Name and Email are required!");
+    }
+    const token = localStorage.getItem('token');
+    try {
+      setAddStaffLoading(true);
+      const res = await axios.post("/api/owner/staff/add", addStaffForm, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(res.data.message || "Staff member added successfully!");
+      setAddStaffForm({ name: "", email: "", phone: "", password: "password123" });
+      fetchStaffData();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to add staff member");
+    } finally {
+      setAddStaffLoading(false);
+    }
+  };
+
   const fetchStaffData = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -538,8 +567,9 @@ const OwnerProfile = ({ orders, refresh }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
            {/* My Fleet Table */}
            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden lg:col-span-1">
-              <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+              <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                  <h3 className="text-lg font-black text-slate-900 flex items-center gap-3"><ShieldCheck className="text-indigo-600" /> My Active Fleet</h3>
+                 <span className="bg-indigo-50 text-indigo-600 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">{staffList.length} Active Partners</span>
               </div>
               <div className="p-4">
                  <table className="w-full text-left">
@@ -553,17 +583,17 @@ const OwnerProfile = ({ orders, refresh }) => {
                        {staffList.length === 0 ? (
                           <tr><td colSpan="2" className="p-12 text-center text-slate-400 font-bold uppercase text-[10px] tracking-widest">No staff in your fleet</td></tr>
                        ) : (
-                          staffList.map(s => (
-                             <tr key={s._id} className="group hover:bg-slate-50 transition-colors">
+                          staffList.map((s, idx) => (
+                             <tr key={s._id || s.id || idx} className="group hover:bg-slate-50 transition-colors">
                                 <td className="p-4">
                                    <span className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black italic tracking-widest shadow-md flex items-center gap-2 w-fit">
-                                      <Hash size={12}/> {s.staffRegistrationCode || 'N/A'}
+                                      <Hash size={12}/> {s.staffRegistrationCode || 'STF-101'}
                                    </span>
                                 </td>
                                 <td className="p-4">
                                    <div>
                                       <p className="text-xs font-black text-slate-900 uppercase">{s.name}</p>
-                                      <p className="text-[10px] font-bold text-slate-500">{s.email}</p>
+                                      <p className="text-[10px] font-bold text-slate-500">{s.email} {s.phone ? `• ${s.phone}` : ''}</p>
                                    </div>
                                 </td>
                              </tr>
@@ -574,35 +604,42 @@ const OwnerProfile = ({ orders, refresh }) => {
               </div>
            </div>
 
-           {/* Invite System */}
-           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden lg:col-span-1 border-t-4 border-t-[#E23744]">
-              <div className="p-8 border-b border-slate-100 bg-red-50/20">
-                 <h3 className="text-lg font-black text-slate-900 flex items-center gap-3"><UserPlus className="text-[#E23744]" /> Onboard New Partners</h3>
-              </div>
-              <div className="p-10 text-center space-y-8">
-                 <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto text-[#E23744] shadow-inner">
-                    <Bike size={36} />
-                 </div>
-                 
+           {/* Direct Add Staff Member & Invite Code */}
+           <div className="space-y-8 lg:col-span-1">
+              <form onSubmit={handleAddStaffSubmit} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 p-8 space-y-5 border-t-4 border-t-indigo-600">
+                 <h3 className="text-lg font-black text-slate-900 flex items-center gap-3 border-b pb-4">
+                    <UserPlus className="text-indigo-600" /> Direct Add Staff Member
+                 </h3>
                  <div>
-                    <h4 className="text-xl font-black text-slate-900 uppercase tracking-tight">Your Restaurant Invite Code</h4>
-                    <p className="text-sm font-medium text-slate-500 mt-2">New staff must enter this code during signup to join your restaurant fleet</p>
+                    <label className="text-xs font-black uppercase text-slate-400 mb-1.5 block">Staff Full Name</label>
+                    <input type="text" required value={addStaffForm.name} onChange={e => setAddStaffForm({...addStaffForm, name: e.target.value})} className="w-full bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none text-slate-900 text-sm" placeholder="e.g. Ramesh Kumar" />
                  </div>
-                 
-                 <div className="relative group max-w-xs mx-auto">
-                    <div className="bg-slate-900 text-white p-7 rounded-[2rem] text-4xl font-black tracking-[0.2em] shadow-2xl shadow-red-100 group-hover:scale-105 transition-all duration-500 italic flex items-center justify-center border-4 border-slate-800">
-                       {user?.inviteCode || 'N/A'}
+                 <div>
+                    <label className="text-xs font-black uppercase text-slate-400 mb-1.5 block">Email Address</label>
+                    <input type="email" required value={addStaffForm.email} onChange={e => setAddStaffForm({...addStaffForm, email: e.target.value})} className="w-full bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none text-slate-900 text-sm" placeholder="e.g. ramesh.staff@test.com" />
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                       <label className="text-xs font-black uppercase text-slate-400 mb-1.5 block">Phone (Optional)</label>
+                       <input type="text" value={addStaffForm.phone} onChange={e => setAddStaffForm({...addStaffForm, phone: e.target.value})} className="w-full bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none text-slate-900 text-sm" placeholder="e.g. 9876543210" />
+                    </div>
+                    <div>
+                       <label className="text-xs font-black uppercase text-slate-400 mb-1.5 block">Password</label>
+                       <input type="text" required value={addStaffForm.password} onChange={e => setAddStaffForm({...addStaffForm, password: e.target.value})} className="w-full bg-slate-50 p-3.5 rounded-xl border border-slate-200 font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none text-slate-900 text-sm" placeholder="Default: password123" />
                     </div>
                  </div>
+                 <button type="submit" disabled={addStaffLoading} className="w-full bg-indigo-600 text-white p-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-900 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
+                    <Plus size={16} /> {addStaffLoading ? "Adding Partner..." : "Add Partner To Fleet"}
+                 </button>
+              </form>
 
-                 <div className="pt-10 flex flex-col items-center gap-4">
-                    <div className="p-5 bg-slate-50 rounded-2xl flex items-center gap-5 text-left w-full border border-slate-100">
-                       <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-red-500 shadow-sm"><ShieldCheck size={24}/></div>
-                       <div>
-                          <p className="text-[10px] font-black text-slate-900 uppercase">Secure Verification</p>
-                          <p className="text-[10px] font-medium text-slate-500 mt-0.5">Automated linking ensures only your staff can access your orders.</p>
-                       </div>
-                    </div>
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl p-6 text-center space-y-4 border-t-4 border-t-[#E23744]">
+                 <div>
+                    <h4 className="text-base font-black text-slate-900 uppercase tracking-tight">Restaurant Invite Code</h4>
+                    <p className="text-xs font-medium text-slate-500 mt-1">Staff can also enter this code during self-registration</p>
+                 </div>
+                 <div className="bg-slate-900 text-white py-4 px-6 rounded-2xl text-2xl font-black tracking-[0.2em] italic max-w-xs mx-auto border-2 border-slate-800">
+                    {user?.inviteCode || '701674'}
                  </div>
               </div>
            </div>
