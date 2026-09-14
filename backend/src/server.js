@@ -60,11 +60,26 @@ mongoose.connection.once('open', async () => {
 });
 
 const fs = require('fs');
+const { execSync } = require('child_process');
 const PORT = process.env.PORT || 5000;
 
 const distPath = fs.existsSync(path.join(__dirname, '../../frontend/dist'))
   ? path.join(__dirname, '../../frontend/dist')
   : path.join(process.cwd(), 'frontend/dist');
+
+// If frontend dist is missing during single-command npm start, auto-build it
+if (!fs.existsSync(path.join(distPath, 'index.html'))) {
+  console.log('⚡ Frontend build not found. Auto-building frontend bundle...');
+  try {
+    const frontendDir = fs.existsSync(path.join(__dirname, '../../frontend'))
+      ? path.join(__dirname, '../../frontend')
+      : path.join(process.cwd(), 'frontend');
+    execSync('npm run build', { cwd: frontendDir, stdio: 'inherit' });
+    console.log('✅ Frontend build completed successfully!');
+  } catch (buildErr) {
+    console.warn('⚠️ Frontend auto-build warning:', buildErr.message);
+  }
+}
 
 // Serve static files from the React frontend app
 app.use(express.static(distPath));
